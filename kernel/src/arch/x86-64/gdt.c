@@ -17,5 +17,4 @@ void init_gdt() {
 
         
         set_gdt(&gdt_desc);
-        for(;;);
 }

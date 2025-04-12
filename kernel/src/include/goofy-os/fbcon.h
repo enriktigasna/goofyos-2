@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <limine.h>
 
 extern uint8_t vga_font[];
 void console_init(struct limine_framebuffer* framebuffer);
