@@ -55,7 +55,8 @@ int strnlen(const char * s, int count)
     return sc - s;
 }
 
-int _vsprintf(char* buf, const char* fmt, va_list args) {
+int _vsprintf(char* buf, const char* fmt, va_list args)
+{
     char *str;
     char *s;
     char numbuf[16];
@@ -108,7 +109,8 @@ int _vsprintf(char* buf, const char* fmt, va_list args) {
     return (str - buf);
 }
 
-int printk(const char* fmt, ...) {
+int printk(const char* fmt, ...)
+{
     char printf_buf[1024];
     va_list args;
     int printed;
@@ -122,7 +124,8 @@ int printk(const char* fmt, ...) {
     return printed;
 }
 
-int sprintf(char* buf, const char* fmt, ...) {
+int sprintf(char* buf, const char* fmt, ...)
+{
     va_list args;
     int printed;
 

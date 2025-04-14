@@ -13,14 +13,15 @@
  * 2. Initialize CPU state with IDT, GDT, etc.
  * 3. Initialize memory manager
  */
-
-void kmain() {
+void kmain()
+{
         cpu_init();
         limine_init();
         console_init(__limine_framebuffer);
 
         printk("Welcome to GoofyOS\n");
 
+        asm("int3");
 
         hcf();
 }

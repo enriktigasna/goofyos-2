@@ -14,7 +14,8 @@ struct fbconsole {
 
 struct fbconsole fbcon;
 
-void console_init(struct limine_framebuffer* framebuffer) {
+void console_init(struct limine_framebuffer* framebuffer)
+{
         fbcon = (struct fbconsole) {
                 .fb = framebuffer,
                 .cursor_x = 0,
@@ -25,7 +26,8 @@ void console_init(struct limine_framebuffer* framebuffer) {
         };
 }
 
-void __console_carriage_return(void) {
+void __console_carriage_return(void)
+{
         fbcon.cursor_x = 0;
 
         // TODO: Scroll
@@ -33,7 +35,8 @@ void __console_carriage_return(void) {
 }
 
 // Write glyph under cursor
-void __console_write_glyph(int glyph_idx) {
+void __console_write_glyph(int glyph_idx)
+{
         volatile uint32_t *fb_ptr = fbcon.fb->address;
         uint8_t *glyph_ptr = &vga_font[glyph_idx * 16];
 
@@ -50,7 +53,8 @@ void __console_write_glyph(int glyph_idx) {
         }
 }
 
-void console_write(char *str) {
+void console_write(char *str)
+{
         int idx = 0;
         uint8_t cur;
         while ( (cur = str[idx++]) ) {

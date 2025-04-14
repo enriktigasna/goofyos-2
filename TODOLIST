@@ -1,0 +1,10 @@
+Immediate concerns:
+- Create struct that includes flags for interrupts
+- Include this struct in the table, and initialize interrupt entire vector in init_idt
+- Create basic ISR for Breakpoint, Double fault, Page fault
+
+Plans:
+- Make fun allocators
+
+Long term:
+- Remove limine provided headers for stdint.h etc., write own

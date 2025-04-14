@@ -1,4 +1,5 @@
-void hcf() {
+void hcf()
+{
   for(;;) {
     asm ("hlt");
   }
