@@ -1,2 +1,2 @@
-int printk(const char* fmt, ...);
-
+#pragma once
+int printk(const char *fmt, ...);

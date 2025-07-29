@@ -1,6 +1,7 @@
 void hcf()
 {
-  for(;;) {
-    asm ("hlt");
-  }
+	for (;;)
+	{
+		asm("hlt");
+	}
 }

@@ -1,0 +1,12 @@
+{
+	"[c]": {
+		"editor.tabSize": 8,
+		"editor.insertSpaces": false,
+		"editor.formatOnSave": true
+	},
+	"C_Cpp.clang_format_style": "file",
+	"files.associations": {
+		"printk.h": "c",
+		"stdint.h": "c"
+	}
+}

@@ -34,7 +34,7 @@ debug: $(IMAGE_NAME).iso
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \
 		$(QEMUFLAGS) \
-		-s -d int
+		-s -S -d int
 
 .PHONY: run-uefi
 run-uefi: ovmf/ovmf-code-x86_64.fd $(IMAGE_NAME).iso

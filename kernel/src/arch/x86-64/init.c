@@ -2,6 +2,6 @@
 
 void cpu_init()
 {
-  init_gdt();
-  init_idt();
+	init_gdt();
+	init_idt();
 }
