@@ -12,5 +12,7 @@ struct interrupt_frame {
 
 void breakpoint_interrupt(struct interrupt_frame *frame);
 void double_fault_stub(struct interrupt_frame *frame);
+void timer_handler(struct interrupt_frame *frame);
+void pagefault_handler(struct interrupt_frame *frame);
 
 void dump_regs(struct regs *registers);

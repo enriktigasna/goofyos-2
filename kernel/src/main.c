@@ -19,8 +19,10 @@ void kmain() {
 
 	printk("Welcome to GoofyOS\n");
 
-	asm("int3");
-	asm("int $0x8");
+	__asm__ volatile("int3");
+	// asm("int $0x8");
 
+	while (1) {
+	};
 	hcf();
 }

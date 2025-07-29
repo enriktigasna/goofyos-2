@@ -30,7 +30,6 @@ void idt_set_entry(uint8_t idx, interrupt_handler_t handler, uint8_t flags) {
 }
 
 void init_idt() {
-	memset(idt_table, 0, sizeof(idt_table));
 	idt_register.limit = sizeof(idt_table) - 1;
 	idt_register.base = (uint64_t)&idt_table;
 

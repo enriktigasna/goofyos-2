@@ -70,3 +70,4 @@ inline uint8_t inb(uint16_t port) {
 }
 
 inline void io_wait(void) { outb(0x80, 0); }
+void pic_remap(uint8_t offset1, uint8_t offset2);

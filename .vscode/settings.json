@@ -8,6 +8,7 @@
 	"files.associations": {
 		"printk.h": "c",
 		"stdint.h": "c",
-		"interrupts.h": "c"
+		"interrupts.h": "c",
+		"cpu.h": "c"
 	}
 }
