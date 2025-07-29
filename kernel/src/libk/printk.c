@@ -18,7 +18,8 @@ char *itoa(int num, char *str, int base, int capital) {
 	int i = 0;
 	bool isNegative = false;
 	if (num == 0) {
-		str = "0";
+		str[i++] = '0';
+		str[i++] = '\0';
 		return str;
 	}
 
@@ -48,7 +49,8 @@ char *itoa(int num, char *str, int base, int capital) {
 char *ltoa(uint64_t num, char *str, int base, int capital) {
 	int i = 0;
 	if (num == 0) {
-		str = "0";
+		str[i++] = '0';
+		str[i++] = '\0';
 		return str;
 	}
 
