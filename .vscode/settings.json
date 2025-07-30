@@ -9,6 +9,7 @@
 		"printk.h": "c",
 		"stdint.h": "c",
 		"interrupts.h": "c",
-		"cpu.h": "c"
+		"cpu.h": "c",
+		"string.h": "c"
 	}
 }
