@@ -13,9 +13,9 @@
  * 3. Initialize memory manager
  */
 void kmain() {
-	cpu_init();
 	limine_init();
 	console_init(__limine_framebuffer);
+	cpu_init();
 
 	printk("Welcome to GoofyOS\n");
 

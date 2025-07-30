@@ -96,7 +96,7 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 				*str++ = *s++;
 			continue;
 		case 'c':
-			*str++ = va_arg(args, int8_t);
+			*str++ = (char)va_arg(args, int);
 			continue;
 		case 'd':
 			itoa(va_arg(args, int32_t), numbuf, 10, 0);
