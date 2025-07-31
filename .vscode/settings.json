@@ -12,6 +12,9 @@
 		"cpu.h": "c",
 		"string.h": "c",
 		"boot.h": "c",
-		"limine.h": "c"
+		"limine.h": "c",
+		"mm.h": "c",
+		"hcf.h": "c",
+		"stdbool.h": "c"
 	}
 }

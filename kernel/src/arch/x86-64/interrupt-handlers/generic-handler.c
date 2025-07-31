@@ -57,7 +57,7 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 		keyboard_handler(ctx);
 		break;
 	default:
-		printk("Unrecognized interrupt! v=%x", ctx->vector_number);
+		printk("Unrecognized interrupt! v=%x\n", ctx->vector_number);
 		dump_regs(ctx);
 		hcf();
 	}

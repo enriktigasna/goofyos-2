@@ -20,9 +20,8 @@ void kmain() {
 	mm_init();
 
 	printk("Welcome to GoofyOS\n");
-
-	__asm__ volatile("int3");
-	// asm("int $0x8");
+	__asm__ volatile("sti");
+	printk("[*] Enabled interrupts\n");
 
 	while (1) {
 	};
