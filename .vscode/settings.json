@@ -10,6 +10,8 @@
 		"stdint.h": "c",
 		"interrupts.h": "c",
 		"cpu.h": "c",
-		"string.h": "c"
+		"string.h": "c",
+		"boot.h": "c",
+		"limine.h": "c"
 	}
 }

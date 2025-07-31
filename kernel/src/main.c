@@ -2,6 +2,7 @@
 #include <goofy-os/cpu.h>
 #include <goofy-os/fbcon.h>
 #include <goofy-os/hcf.h>
+#include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <limine.h>
 #include <stddef.h>
@@ -16,6 +17,7 @@ void kmain() {
 	limine_init();
 	console_init(__limine_framebuffer);
 	cpu_init();
+	mm_init();
 
 	printk("Welcome to GoofyOS\n");
 

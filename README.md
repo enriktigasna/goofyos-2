@@ -4,9 +4,9 @@ Goofy operating system
 
 
 todo: 
-- pit
-- keyboard
-- centralize interrupt handling
-- get map
-- early bump page allocator
-- helpers for manipulating top-level page structures
+- make page allocator
+- make mapper from page allocator
+	- pa to va
+	- va to pa
+	- map_page
+- allocate pages for struct pages, and do
