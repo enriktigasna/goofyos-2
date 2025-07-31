@@ -13,10 +13,7 @@ static void __setup_memmap_regions() {
 	for (int i = 0; i < __limine_memmap_response->entry_count; i++) {
 		struct limine_memmap_entry *entry =
 		    __limine_memmap_response->entries[idx++];
-		if (entry->type == LIMINE_MEMMAP_USABLE ||
-		    entry->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) {
-			printk("Discovered %p\n", entry->base);
-
+		if (entry->type == LIMINE_MEMMAP_USABLE) {
 			mm_phys_regions[mm_region_count].base = entry->base;
 			mm_phys_regions[mm_region_count].size = entry->length;
 			mm_region_count++;

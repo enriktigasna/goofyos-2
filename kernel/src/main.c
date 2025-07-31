@@ -20,10 +20,14 @@ void kmain() {
 	mm_init();
 
 	printk("Welcome to GoofyOS\n");
-	__asm__ volatile("sti");
 	printk("[*] Enabled interrupts\n");
 
-	while (1) {
+	for (int i = 0; i < 0x100000; i++) {
+		void *page = __early_getpage();
+		if (i % 0x10000 == 0) {
+			printk("Allocated %p\n", page);
+		}
 	};
+
 	hcf();
 }

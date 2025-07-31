@@ -17,8 +17,7 @@ struct early_chunk *early_pgalloc_head;
 void __early_pgalloc_init() {
 	for (int i = 0; i < mm_region_count; i++) {
 		uint64_t region_base = __va(mm_phys_regions[i].base);
-		uint64_t page_count = mm_phys_regions[i].base >> 12;
-		printk("base is %p\n", region_base);
+		uint64_t page_count = mm_phys_regions[i].size >> 12;
 
 		struct early_chunk *curr = (struct early_chunk *)region_base;
 		curr->next = early_pgalloc_head;
@@ -47,4 +46,11 @@ void *__early_getpage() {
 	early_pgalloc_head = (struct early_chunk *)((uint64_t)curr + 0x1000);
 	early_pgalloc_head->next = next;
 	early_pgalloc_head->page_count = page_count - 1;
+	return curr;
+}
+
+void __early_freepage(void *page) {
+	struct early_chunk *curr = page;
+	curr->next = early_pgalloc_head;
+	early_pgalloc_head = curr;
 }

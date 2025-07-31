@@ -4,9 +4,9 @@ Goofy operating system
 
 
 todo: 
-- make page allocator
-- make mapper from page allocator
-	- pa to va
-	- va to pa
-	- map_page
-- allocate pages for struct pages, and do
+- make mapper
+- map sparse array for struct pages
+- fill in all struct pages
+- get synchronization right
+- buddy allocator
+- enable interrupts

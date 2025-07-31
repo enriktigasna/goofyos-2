@@ -1,6 +1,7 @@
 #include <goofy-os/fbcon.h>
 #include <limine.h>
 #include <stdint.h>
+#include <string.h>
 
 struct fbconsole {
 	struct limine_framebuffer *fb;
@@ -19,7 +20,7 @@ void console_init(struct limine_framebuffer *framebuffer) {
 				   .cursor_x = 0,
 				   .cursor_y = 0,
 				   .width = framebuffer->width / 8,
-				   .height = framebuffer->height / 8,
+				   .height = framebuffer->height / 16,
 				   .color = 0xffffff};
 }
 
@@ -27,7 +28,16 @@ void __console_carriage_return(void) {
 	fbcon.cursor_x = 0;
 
 	// TODO: Scroll
-	fbcon.cursor_y++;
+	if (fbcon.cursor_y < fbcon.height - 2) {
+		fbcon.cursor_y++;
+	} else {
+		uint64_t shift = fbcon.fb->pitch * 16;
+		void *src = fbcon.fb->address;
+		void *dst = (void *)((uint64_t)fbcon.fb->address + shift);
+		uint64_t volume = fbcon.fb->pitch * fbcon.fb->height - shift;
+
+		memmove(src, dst, volume);
+	}
 }
 
 // Write glyph under cursor
