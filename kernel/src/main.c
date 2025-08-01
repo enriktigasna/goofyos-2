@@ -22,11 +22,6 @@ void kmain() {
 	printk("Welcome to GoofyOS\n");
 	printk("[*] Enabled interrupts\n");
 
-	uint64_t cr3 = __readcr3();
-	printk("cr3 %p", cr3);
-	__early_map_page((void *)__va(cr3), (void *)0x1337000,
-			 (void *)0xffffc00000000000, PG_WRITE);
-
 	while (true) {
 	}
 

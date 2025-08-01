@@ -83,7 +83,7 @@ jmp isr_generic_stub
 
 align 16
 isr_vector_13_handler:
-push 0
+
 push 13
 jmp isr_generic_stub
 
