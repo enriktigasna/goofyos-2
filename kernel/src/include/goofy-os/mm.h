@@ -17,4 +17,5 @@ extern uint64_t hhdm_offset;
 void mm_init();
 void __early_pgalloc_init();
 void *__early_getpage();
+void *__early_zgetpage();
 void __early_freepage(void *page);

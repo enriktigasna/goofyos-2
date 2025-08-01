@@ -1,6 +1,7 @@
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <stddef.h>
+#include <string.h>
 
 /*
  * Early allocator with inline freelists
@@ -47,6 +48,12 @@ void *__early_getpage() {
 	early_pgalloc_head->next = next;
 	early_pgalloc_head->page_count = page_count - 1;
 	return curr;
+}
+
+void *__early_zgetpage() {
+	void *page = __early_getpage();
+	memset(page, '0', 0x1000);
+	return page;
 }
 
 void __early_freepage(void *page) {
