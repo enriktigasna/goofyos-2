@@ -21,8 +21,22 @@ extern bool pgalloc_initialized;
 extern uint64_t hhdm_offset;
 
 void mm_init();
+void sparse_init();
 void __early_pgalloc_init();
 void *__early_getpage();
 void *__early_zgetpage();
 void __early_freepage(void *page);
 void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags);
+
+bool is_mapped(void *virt);
+
+struct page {
+	union {
+		struct {
+			uint64_t flags;
+		};
+		uint64_t padding[8];
+	};
+};
+
+extern struct page *sparsemap_array;

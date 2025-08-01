@@ -26,5 +26,5 @@ void mm_init() {
 	__setup_memmap_regions();
 	__early_pgalloc_init();
 
-	//
+	sparse_init();
 }

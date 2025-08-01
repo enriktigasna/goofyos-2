@@ -28,7 +28,6 @@ void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
 	volatile uint64_t *table = pt + get_index(level, virt);
 
 	while (level) {
-		printk("Table %p\n", table);
 		uint64_t value = *table;
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
@@ -44,4 +43,28 @@ void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
 	*table = (uint64_t)phys | flags | PG_PRESENT;
 
 	vm_invalidate(virt);
+}
+
+bool is_mapped(void *virt) {
+	uint64_t *pt = (uint64_t *)__va(__readcr3());
+
+	int level = 3;
+	volatile uint64_t *table = pt + get_index(level, virt);
+	while (level) {
+		uint64_t value = *table;
+		if (*table & PG_PRESENT) {
+			value &= 0x7ffffffffffff000;
+		} else {
+			return false;
+		}
+
+		level--;
+		table = (uint64_t *)__va(value) + get_index(level, virt);
+	}
+
+	if (*table & PG_PRESENT) {
+		return true;
+	} else {
+		return false;
+	}
 }

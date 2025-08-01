@@ -1,0 +1,20 @@
+    GoofyOS
+
+Goofy operating system
+
+
+    TODO
+map sparse array for struct pages
+refactor physical addressed to always be uint64_t
+fill in all struct pages
+get synchronization right
+buddy allocator
+enable interrupts
+
+    COMPLETED
+basic terminal with scrolling
+pic 8259
+keyboard input
+interrupt stubs
+getting memory regions
+early mapper
