@@ -1,11 +1,6 @@
+#include <goofy-os/hcf.h>
 #include <goofy-os/mm.h>
 #include <stdint.h>
-
-#define PG_PRESENT 0x1ULL
-#define PG_WRITE 0x2ULL
-#define PG_USER 0x4ULL
-#define PG_NX 0x8000000000000000ULL
-#define PG_FLAGMASK PG_WRITE | PG_NX | PG_USER
 
 /* shout out Dbstream osdev page */
 /*
@@ -31,7 +26,7 @@ void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
 
 	int level = 4;
 
-	volatile uint64_t *table = &pt[get_index(level, virt)];
+	volatile uint64_t *table = pt + get_index(level, virt);
 
 	while (level) {
 		uint64_t phys = *table;
@@ -43,9 +38,8 @@ void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
 		}
 
 		level--;
-		table =
-		    &((uint64_t *)(phys + hhdm_offset))[get_index(level, virt)];
+		table = (uint64_t *)__va(phys) + get_index(level, virt);
 	}
 
-	*table = (uint64_t)phys | flags;
+	*table = (uint64_t)phys | flags | PG_PRESENT;
 }

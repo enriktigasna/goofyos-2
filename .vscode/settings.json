@@ -15,6 +15,7 @@
 		"limine.h": "c",
 		"mm.h": "c",
 		"hcf.h": "c",
-		"stdbool.h": "c"
+		"stdbool.h": "c",
+		"fbcon.h": "c"
 	}
 }
