@@ -12,8 +12,8 @@ void __map_region_struct(struct mm_memmap_region *region, uint64_t *pt) {
 		struct page *ptr = &sparsemap_array[curr >> 12];
 		uint64_t aligned = (uint64_t)ptr & ~0xfff;
 
-		void *page = __early_zgetpage() - hhdm_offset;
-		__early_map_page(pt, page, (void *)aligned, PG_NX | PG_WRITE);
+		uint64_t page = (uint64_t)zpgalloc() - hhdm_offset;
+		map_page(pt, page, (void *)aligned, PG_NX | PG_WRITE);
 		curr += 0x1000 * STRUCTS_PER_PAGE;
 	}
 
@@ -21,8 +21,8 @@ void __map_region_struct(struct mm_memmap_region *region, uint64_t *pt) {
 	struct page *ptr = &sparsemap_array[(curr + region->size - 1) >> 12];
 	uint64_t aligned = (uint64_t)ptr & ~0xfff;
 
-	void *page = __early_zgetpage() - hhdm_offset;
-	__early_map_page(pt, page, (void *)aligned, PG_NX | PG_WRITE);
+	uint64_t page = (uint64_t)zpgalloc() - hhdm_offset;
+	map_page(pt, page, (void *)aligned, PG_NX | PG_WRITE);
 }
 
 void sparse_init() {

@@ -8,7 +8,7 @@ int mm_region_count = 0;
 uint64_t hhdm_offset;
 struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
 
-static void __setup_memmap_regions() {
+static void setup_memmap_regions() {
 	int idx = 0;
 	for (int i = 0; i < __limine_memmap_response->entry_count; i++) {
 		struct limine_memmap_entry *entry =
@@ -16,6 +16,7 @@ static void __setup_memmap_regions() {
 		if (entry->type == LIMINE_MEMMAP_USABLE) {
 			mm_phys_regions[mm_region_count].base = entry->base;
 			mm_phys_regions[mm_region_count].size = entry->length;
+
 			mm_region_count++;
 		}
 	}
@@ -23,8 +24,8 @@ static void __setup_memmap_regions() {
 
 void mm_init() {
 	hhdm_offset = __limine_hhdm_response->offset;
-	__setup_memmap_regions();
-	__early_pgalloc_init();
+	setup_memmap_regions();
 
+	pgalloc_init();
 	sparse_init();
 }

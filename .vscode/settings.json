@@ -16,6 +16,11 @@
 		"mm.h": "c",
 		"hcf.h": "c",
 		"stdbool.h": "c",
-		"fbcon.h": "c"
+		"fbcon.h": "c",
+		"compare": "cpp",
+		"cstdint": "cpp",
+		"format": "cpp",
+		"spinlock.h": "c",
+		"stddef.h": "c"
 	}
 }

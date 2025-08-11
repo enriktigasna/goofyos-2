@@ -47,6 +47,7 @@ void dump_regs(struct interrupt_context *ctx) {
 }
 
 void isr_generic_handler(struct interrupt_context *ctx) {
+	pushcli();
 	switch (ctx->vector_number) {
 	case 0x3:
 		break;
@@ -61,5 +62,6 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 		dump_regs(ctx);
 		hcf();
 	}
+	popcli();
 	return;
 }

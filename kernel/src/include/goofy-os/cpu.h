@@ -54,3 +54,6 @@ void pic_remap(uint8_t offset1, uint8_t offset2);
 void pic_eoi(uint8_t irq);
 uint64_t __readcr3();
 void vm_invalidate(void *entry);
+
+void pushcli();
+void popcli();

@@ -14,13 +14,19 @@
  * 3. Initialize memory manager
  */
 void kmain() {
+	pushcli();
 	limine_init();
 	console_init(__limine_framebuffer);
 	cpu_init();
 	mm_init();
 
 	printk("Welcome to GoofyOS\n");
-	printk("[*] Enabled interrupts\n");
+
+	uint64_t cr3 = __readcr3();
+	printk("cr3 %p", cr3);
+
+	map_page((void *)__va(cr3), 0x1337000, (void *)0xffffc00000000000,
+		 PG_WRITE);
 
 	while (true) {
 	}

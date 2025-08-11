@@ -1,4 +1,5 @@
 #include <goofy-os/fbcon.h>
+#include <goofy-os/spinlock.h>
 #include <limine.h>
 #include <stdint.h>
 #include <string.h>
@@ -10,7 +11,7 @@ struct fbconsole {
 	uint16_t width;
 	uint16_t height;
 	uint32_t color;
-	// spinlock_t lock
+	struct spinlock lock;
 };
 
 struct fbconsole fbcon;
@@ -60,6 +61,7 @@ void __console_write_glyph(int glyph_idx) {
 }
 
 void console_write(char *str) {
+	acquire(&fbcon.lock);
 	int idx = 0;
 	uint8_t cur;
 	while ((cur = str[idx++])) {
@@ -72,4 +74,5 @@ void console_write(char *str) {
 			__console_carriage_return();
 		}
 	}
+	release(&fbcon.lock);
 }

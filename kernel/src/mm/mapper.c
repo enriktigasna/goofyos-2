@@ -16,7 +16,7 @@ uint64_t get_index(int level, void *addr) {
 
 // TODO:
 // Physical memory should be represented as uint64_t not void*
-void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
+void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags) {
 	if (flags & ~PG_FLAGMASK) {
 		printk("Flagmask is %p you gave it %p\n", PG_FLAGMASK, flags);
 		printk("%p\n", flags & ~PG_FLAGMASK);
@@ -32,8 +32,8 @@ void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags) {
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
 		} else {
-			value = (uint64_t)__early_zgetpage() - hhdm_offset;
-			*table = value | flags | PG_PRESENT;
+			phys = (uint64_t)zpgalloc() - hhdm_offset;
+			value = phys;
 		}
 
 		level--;

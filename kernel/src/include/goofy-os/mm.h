@@ -1,3 +1,6 @@
+#pragma once
+
+#include <goofy-os/spinlock.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -15,19 +18,23 @@ struct mm_memmap_region {
 	uint64_t size;
 };
 
+struct kmem_struct {
+	struct spinlock lock;
+};
+
 extern int mm_region_count;
 extern struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
 extern bool pgalloc_initialized;
 extern uint64_t hhdm_offset;
 
 void mm_init();
-void sparse_init();
-void __early_pgalloc_init();
-void *__early_getpage();
-void *__early_zgetpage();
-void __early_freepage(void *page);
-void __early_map_page(uint64_t *pt, void *phys, void *virt, uint64_t flags);
+void pgalloc_init();
+void *pgalloc();
+void *zpgalloc();
+void pgfree(void *page);
+void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags);
 
+void sparse_init();
 bool is_mapped(void *virt);
 
 struct page {
