@@ -32,8 +32,8 @@ void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags) {
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
 		} else {
-			phys = (uint64_t)zpgalloc() - hhdm_offset;
-			value = phys;
+			value = (uint64_t)zpgalloc() - hhdm_offset;
+			*table = value | PG_PRESENT | PG_WRITE;
 		}
 
 		level--;

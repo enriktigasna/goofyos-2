@@ -7,7 +7,7 @@
 #define MM_MAX_MEMORY_REGIONS 0x20
 #define __va(phys) ((uint64_t)phys + hhdm_offset)
 #define __hhdm_to_page(addr)                                                   \
-	&sparsemap_array[((uint64_t)(addr) - hhdm_offset) << 12]
+	&sparsemap_array[((uint64_t)(addr) - hhdm_offset) >> 12]
 
 #define PG_PRESENT 0x1ULL
 #define PG_WRITE 0x2ULL

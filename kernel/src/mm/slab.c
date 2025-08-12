@@ -19,7 +19,7 @@ struct slab bootstrap_slab_cache[SLAB_PREALLOC_PAGES];
 // *page becomes the head
 void *fill_page_freelist(size_t size, void *page) {
 	void *next = NULL;
-	for (int i = 0; i < PAGE_SIZE / slab_cache.size; i++) {
+	for (int i = 0; i < PAGE_SIZE / size; i++) {
 		*(void **)(page + i * size) = next;
 		next = (void *)(page + i * size);
 	}
@@ -65,6 +65,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 			if (partial->next)
 				partial->next->prev = NULL;
 			partial->next = cache->slab_full;
+
 			if (partial->next)
 				partial->next->prev = partial;
 			cache->slab_full = partial;
@@ -105,9 +106,9 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	// Prevent slab_cache infinite recursion
 	if (cache == &slab_cache) {
 		new_slab = (struct slab *)head;
+		head = *(void **)head;
 		memset(new_slab, 0, sizeof(struct slab));
 
-		head = *(void **)head;
 		new_slab->free_objects = (PAGE_SIZE / cache->size) - 2;
 	} else {
 		new_slab = _kmem_cache_alloc(&slab_cache);
@@ -128,7 +129,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	cache->slab_partial = new_slab;
 
 	void *object = head;
-	new_slab->freelist = *(void **)head;
+	new_slab->freelist = *(void **)object;
 
 	return object;
 }
@@ -145,7 +146,6 @@ void *kmalloc(size_t size) {
 		return NULL;
 
 	struct kmem_cache *cache = &kmalloc_caches[kmalloc_idx(size)];
-	printk("cache %p\n", cache);
 	return kmem_cache_alloc(cache);
 }
 

@@ -23,13 +23,16 @@ void kmain() {
 
 	printk("Welcome to GoofyOS\n");
 
-	void *obj = kmalloc(2048);
-	printk("Allocated %p\n", obj);
-
 	uint64_t cr3 = __readcr3();
-	printk("cr3 %p", cr3);
+	printk("cr3 %p\n", cr3);
 
+	int count = 0;
 	while (true) {
+		void *obj = kmalloc(2048);
+		if (count % 0x100 == 0) {
+			printk("Allocated %p count = %d\n", obj, count);
+		}
+		count++;
 	}
 
 	hcf();
