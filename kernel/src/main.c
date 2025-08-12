@@ -4,6 +4,7 @@
 #include <goofy-os/hcf.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/slab.h>
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -22,11 +23,11 @@ void kmain() {
 
 	printk("Welcome to GoofyOS\n");
 
+	void *obj = kmalloc(2048);
+	printk("Allocated %p\n", obj);
+
 	uint64_t cr3 = __readcr3();
 	printk("cr3 %p", cr3);
-
-	map_page((void *)__va(cr3), 0x1337000, (void *)0xffffc00000000000,
-		 PG_WRITE);
 
 	while (true) {
 	}

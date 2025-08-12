@@ -5,6 +5,9 @@
 		"editor.formatOnSave": true
 	},
 	"C_Cpp.clang_format_style": "file",
+	"C_Cpp.clang_format_fallbackStyle": "none", 
+	"C_Cpp.clang_format_sortIncludes": false,
+	"C_Cpp.clang_format_ignoreComments": true,
 	"files.associations": {
 		"printk.h": "c",
 		"stdint.h": "c",
@@ -21,6 +24,7 @@
 		"cstdint": "cpp",
 		"format": "cpp",
 		"spinlock.h": "c",
-		"stddef.h": "c"
+		"stddef.h": "c",
+		"slab.h": "c"
 	}
 }
