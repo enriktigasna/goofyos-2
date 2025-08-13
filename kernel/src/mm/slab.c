@@ -30,6 +30,7 @@ void *fill_page_freelist(size_t size, void *page) {
 
 void slab_cache_bootstrap() {
 	slab_cache.size = kmalloc_size(sizeof(struct slab));
+	sprintf((char *)&slab_cache.name, "slab_jar");
 
 	for (int i = 0; i < SLAB_PREALLOC_PAGES; i++) {
 		struct slab *tmp = &bootstrap_slab_cache[i];
@@ -37,6 +38,7 @@ void slab_cache_bootstrap() {
 			slab_cache.slab_empty->prev = tmp;
 		}
 
+		tmp->flags |= SLAB_STATIC;
 		tmp->next = slab_cache.slab_empty;
 		tmp->slab_cache = &slab_cache;
 
@@ -45,6 +47,9 @@ void slab_cache_bootstrap() {
 		if (!page) {
 			hcf();
 		}
+
+		struct page *pgstruct = __hhdm_to_page(page);
+		pgstruct->slab = tmp;
 
 		tmp->freelist = fill_page_freelist(slab_cache.size, page);
 		tmp->free_objects = PAGE_SIZE / slab_cache.size;
@@ -129,6 +134,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	}
 
 	struct_page->slab = new_slab;
+	new_slab->slab_cache = cache;
 
 	new_slab->next = cache->slab_partial;
 	if (new_slab->next)
@@ -147,6 +153,10 @@ void *kmem_cache_alloc(struct kmem_cache *cache) {
 	void *obj = _kmem_cache_alloc(cache);
 	release(&slab_lock);
 	return obj;
+}
+
+static inline __attribute__((always_inline)) bool static_slab(struct slab *sl) {
+	return sl->flags & SLAB_STATIC;
 }
 
 /*
@@ -174,8 +184,7 @@ void _kfree(void *object) {
 		}
 
 		// Case where we destroy slab
-		if (cache->slab_empty > SLAB_MAX_EMPTY) {
-			// TODO: STOP IT FROM FREEING BOOTSTRAP_SLAB_CACHE
+		if (cache->slab_empty > SLAB_MAX_EMPTY && !static_slab(slab)) {
 			_kfree(slab);
 			pgfree((void *)((uint64_t)object & ~0xfff));
 			return;
@@ -220,6 +229,8 @@ struct slab *alloc_slab_struct() {}
 void slab_init() {
 	slab_cache_bootstrap();
 	for (int i = 0; i < SLAB_COUNT; i++) {
-		kmalloc_caches[i].size = kmalloc_sizes[i];
+		struct kmem_cache *curr = &kmalloc_caches[i];
+		curr->size = kmalloc_sizes[i];
+		sprintf((char *)&curr->name, "kmalloc-%d", kmalloc_sizes[i]);
 	}
 }

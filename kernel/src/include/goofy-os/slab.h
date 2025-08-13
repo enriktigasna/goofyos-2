@@ -8,6 +8,11 @@
 #define kmalloc_size(sz) (kmalloc_sizes[kmalloc_idx(sz)])
 #define PAGE_SIZE 4096
 
+#define SLAB_STATIC (1 << 0)
+#define SLAB_FULL (1 << 1)
+#define SLAB_PARTIAL (1 << 2)
+#define SLAB_EMPTY (1 << 3)
+
 /*
  * Slab allocator behavior:
  * Three lists: slab_full, slab_partial, slab_empty, will first look in partial,
@@ -28,6 +33,8 @@ struct kmem_cache {
 	int n_full;
 	int n_partial;
 	int n_empty;
+
+	char name[32];
 };
 
 struct slab {
@@ -38,6 +45,7 @@ struct slab {
 
 	void *freelist;
 	int free_objects;
+	int flags;
 };
 
 // clang-format off
@@ -57,3 +65,4 @@ size_t kmalloc_idx(size_t size) {
 // clang-format on
 void slab_init();
 void *kmalloc(size_t size);
+void kfree(void *object);
