@@ -10,10 +10,10 @@ const size_t kmalloc_sizes[SLAB_COUNT] = {8,   16,  32,	  64,  128,
 struct kmem_cache kmalloc_caches[SLAB_COUNT];
 struct spinlock slab_lock;
 
-struct kmem_cache slab_cache;
-struct slab bootstrap_slab_cache[SLAB_PREALLOC_PAGES];
+struct kmem_cache slab_jar;
+struct slab bootstrap_slab_jar[SLAB_PREALLOC_PAGES];
 
-// Initialize the slab_cache directly,
+// Initialize the slab_jar directly,
 // you will need it to init other caches
 
 // Turn a page into a freelist of size size
@@ -28,19 +28,19 @@ void *fill_page_freelist(size_t size, void *page) {
 	return next;
 }
 
-void slab_cache_bootstrap() {
-	slab_cache.size = kmalloc_size(sizeof(struct slab));
-	sprintf((char *)&slab_cache.name, "slab_jar");
+void slab_jar_bootstrap() {
+	slab_jar.size = kmalloc_size(sizeof(struct slab));
+	sprintf((char *)&slab_jar.name, "slab_jar");
 
 	for (int i = 0; i < SLAB_PREALLOC_PAGES; i++) {
-		struct slab *tmp = &bootstrap_slab_cache[i];
-		if (slab_cache.slab_empty) {
-			slab_cache.slab_empty->prev = tmp;
+		struct slab *tmp = &bootstrap_slab_jar[i];
+		if (slab_jar.slab_empty) {
+			slab_jar.slab_empty->prev = tmp;
 		}
 
 		tmp->flags |= SLAB_STATIC;
-		tmp->next = slab_cache.slab_empty;
-		tmp->slab_cache = &slab_cache;
+		tmp->next = slab_jar.slab_empty;
+		tmp->slab_jar = &slab_jar;
 
 		// TODO: Set struct slab in struct page
 		void *page = pgalloc();
@@ -51,11 +51,11 @@ void slab_cache_bootstrap() {
 		struct page *pgstruct = __hhdm_to_page(page);
 		pgstruct->slab = tmp;
 
-		tmp->freelist = fill_page_freelist(slab_cache.size, page);
-		tmp->free_objects = PAGE_SIZE / slab_cache.size;
+		tmp->freelist = fill_page_freelist(slab_jar.size, page);
+		tmp->free_objects = PAGE_SIZE / slab_jar.size;
 
-		slab_cache.slab_empty = tmp;
-		slab_cache.n_empty++;
+		slab_jar.slab_empty = tmp;
+		slab_jar.n_empty++;
 	}
 }
 
@@ -115,15 +115,15 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	struct page *struct_page = __hhdm_to_page(page);
 	struct slab *new_slab;
 
-	// Prevent slab_cache infinite recursion
-	if (cache == &slab_cache) {
+	// Prevent slab_jar infinite recursion
+	if (cache == &slab_jar) {
 		new_slab = (struct slab *)head;
 		head = *(void **)head;
 		memset(new_slab, 0, sizeof(struct slab));
 
 		new_slab->free_objects = (PAGE_SIZE / cache->size) - 2;
 	} else {
-		new_slab = _kmem_cache_alloc(&slab_cache);
+		new_slab = _kmem_cache_alloc(&slab_jar);
 		memset(new_slab, 0, sizeof(struct slab));
 
 		if (!new_slab) {
@@ -134,7 +134,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	}
 
 	struct_page->slab = new_slab;
-	new_slab->slab_cache = cache;
+	new_slab->slab_jar = cache;
 
 	new_slab->next = cache->slab_partial;
 	if (new_slab->next)
@@ -165,7 +165,7 @@ static inline __attribute__((always_inline)) bool static_slab(struct slab *sl) {
 void _kfree(void *object) {
 	struct page *pg = __hhdm_to_page(object);
 	struct slab *slab = pg->slab;
-	struct kmem_cache *cache = slab->slab_cache;
+	struct kmem_cache *cache = slab->slab_jar;
 
 	// Add to slab freelist
 	size_t max_objects = PAGE_SIZE / cache->size;
@@ -223,11 +223,11 @@ void *kmalloc(size_t size) {
 }
 
 // 1. First check if slab cache has partials or empties. If it does, return
-// kmem_cache_alloc(slab_cache)
+// kmem_cache_alloc(slab_jar)
 struct slab *alloc_slab_struct() {}
 
 void slab_init() {
-	slab_cache_bootstrap();
+	slab_jar_bootstrap();
 	for (int i = 0; i < SLAB_COUNT; i++) {
 		struct kmem_cache *curr = &kmalloc_caches[i];
 		curr->size = kmalloc_sizes[i];
