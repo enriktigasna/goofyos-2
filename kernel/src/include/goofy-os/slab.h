@@ -3,8 +3,9 @@
 #include <stdint.h>
 
 #define SLAB_COUNT 9
+#define SLAB_MAX_EMPTY 2
 #define SLAB_PREALLOC_PAGES 2
-#define kmalloc_size(sz) (8 << kmalloc_idx(sz))
+#define kmalloc_size(sz) (kmalloc_sizes[kmalloc_idx(sz)])
 #define PAGE_SIZE 4096
 
 /*
@@ -23,6 +24,10 @@ struct kmem_cache {
 	struct slab *slab_full;
 	struct slab *slab_partial;
 	struct slab *slab_empty;
+
+	int n_full;
+	int n_partial;
+	int n_empty;
 };
 
 struct slab {

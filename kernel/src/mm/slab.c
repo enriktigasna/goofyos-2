@@ -5,7 +5,8 @@
 #include <goofy-os/spinlock.h>
 #include <string.h>
 
-size_t kmalloc_sizes[SLAB_COUNT] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+const size_t kmalloc_sizes[SLAB_COUNT] = {8,   16,  32,	  64,  128,
+					  256, 512, 1024, 2048};
 struct kmem_cache kmalloc_caches[SLAB_COUNT];
 struct spinlock slab_lock;
 
@@ -49,6 +50,7 @@ void slab_cache_bootstrap() {
 		tmp->free_objects = PAGE_SIZE / slab_cache.size;
 
 		slab_cache.slab_empty = tmp;
+		slab_cache.n_empty++;
 	}
 }
 
@@ -69,6 +71,9 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 			if (partial->next)
 				partial->next->prev = partial;
 			cache->slab_full = partial;
+
+			cache->n_full++;
+			cache->n_partial--;
 		}
 
 		return object;
@@ -89,6 +94,8 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 
 		cache->slab_partial = empty;
 
+		cache->n_empty--;
+		cache->n_partial++;
 		return object;
 	}
 
@@ -127,6 +134,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	if (new_slab->next)
 		new_slab->next->prev = new_slab;
 	cache->slab_partial = new_slab;
+	cache->n_partial++;
 
 	void *object = head;
 	new_slab->freelist = *(void **)object;
@@ -139,6 +147,62 @@ void *kmem_cache_alloc(struct kmem_cache *cache) {
 	void *obj = _kmem_cache_alloc(cache);
 	release(&slab_lock);
 	return obj;
+}
+
+/*
+ * All slabs freed are in the hhdm
+ */
+void _kfree(void *object) {
+	struct page *pg = __hhdm_to_page(object);
+	struct slab *slab = pg->slab;
+	struct kmem_cache *cache = slab->slab_cache;
+
+	// Add to slab freelist
+	size_t max_objects = PAGE_SIZE / cache->size;
+	*(void **)object = slab->freelist;
+	slab->freelist = object;
+
+	// If this is the last object in the slab we freed
+	if (++slab->free_objects == max_objects) {
+		// Pop it out from the d-linked list and put into free
+		if (slab->prev) {
+			slab->prev->next = slab->next;
+		}
+
+		if (slab->next) {
+			slab->next->prev = slab->prev;
+		}
+
+		// Case where we destroy slab
+		if (cache->slab_empty > SLAB_MAX_EMPTY) {
+			// TODO: STOP IT FROM FREEING BOOTSTRAP_SLAB_CACHE
+			_kfree(slab);
+			pgfree((void *)((uint64_t)object & ~0xfff));
+			return;
+		}
+
+		// Case where slab goes into empty
+		slab->next = cache->slab_empty;
+		slab->prev = NULL;
+
+		if (cache->slab_empty) {
+			cache->slab_empty->prev = slab;
+		}
+
+		cache->slab_empty = slab;
+		return;
+	}
+
+	if (slab->free_objects > max_objects) {
+		printk("DOUBLE FREE (more free_objects than max_objects)\n");
+		hcf();
+	}
+}
+
+void kfree(void *object) {
+	acquire(&slab_lock);
+	_kfree(object);
+	release(&slab_lock);
 }
 
 void *kmalloc(size_t size) {

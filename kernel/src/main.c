@@ -29,7 +29,7 @@ void kmain() {
 	int count = 0;
 	while (true) {
 		void *obj = kmalloc(2048);
-		if (count % 0x100 == 0) {
+		if (count % 0x1000 == 0) {
 			printk("Allocated %p count = %d\n", obj, count);
 		}
 		count++;
