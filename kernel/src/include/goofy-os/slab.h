@@ -9,9 +9,6 @@
 #define PAGE_SIZE 4096
 
 #define SLAB_STATIC (1 << 0)
-#define SLAB_FULL (1 << 1)
-#define SLAB_PARTIAL (1 << 2)
-#define SLAB_EMPTY (1 << 3)
 
 /*
  * Slab allocator behavior:

@@ -60,6 +60,8 @@ void *pgalloc() {
 	return curr;
 }
 
+struct page *pgalloc_phys() { return __hhdm_to_page(pgalloc()); }
+
 void *zpgalloc() {
 	void *page = pgalloc();
 

@@ -67,12 +67,16 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 		partial->freelist = *(void **)object;
 		partial->free_objects--;
 
+		// If we fill the partial slab
 		if (!partial->free_objects) {
+			// Pop the slab from partial
 			cache->slab_partial = partial->next;
 			if (partial->next)
 				partial->next->prev = NULL;
-			partial->next = cache->slab_full;
 
+			// Put it into full
+			partial->next = cache->slab_full;
+			partial->prev = NULL;
 			if (partial->next)
 				partial->next->prev = partial;
 			cache->slab_full = partial;
@@ -220,6 +224,15 @@ void *kmalloc(size_t size) {
 
 	struct kmem_cache *cache = &kmalloc_caches[kmalloc_idx(size)];
 	return kmem_cache_alloc(cache);
+}
+
+void *kzalloc(size_t size) {
+	if (size > 2048)
+		return NULL;
+
+	void *object = kmalloc(size);
+	memset(object, 0, size);
+	return object;
 }
 
 // 1. First check if slab cache has partials or empties. If it does, return
