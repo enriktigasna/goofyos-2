@@ -9,11 +9,13 @@
 #define __hhdm_to_page(addr)                                                   \
 	&sparsemap_array[((uint64_t)(addr) - hhdm_offset) >> 12]
 
-#define PG_PRESENT 0x1ULL
-#define PG_WRITE 0x2ULL
-#define PG_USER 0x4ULL
-#define PG_NX 0x8000000000000000ULL
-#define PG_FLAGMASK (PG_WRITE | PG_NX | PG_USER)
+#define PG_PRESENT (0x1ULL << 0)
+#define PG_WRITE (1ULL << 1)
+#define PG_USER (1ULL << 2)
+#define PG_NX (1ULL << 63)
+#define PG_PS (1ULL << 6)
+
+#define PG_FLAGMASK (PG_PRESENT | PG_WRITE | PG_USER | PG_NX | PG_PS)
 
 struct mm_memmap_region {
 	uint64_t base;
@@ -40,6 +42,7 @@ void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags);
 void kernel_top_pgt_init();
 void sparse_init();
 bool is_mapped(void *virt);
+uint64_t virt_to_phys(void *virt);
 
 struct page {
 	union {

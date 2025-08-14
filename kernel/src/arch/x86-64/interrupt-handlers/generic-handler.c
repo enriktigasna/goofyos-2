@@ -1,4 +1,5 @@
 #include <goofy-os/cpu.h>
+#include <goofy-os/fbcon.h>
 #include <goofy-os/hcf.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/scancode.h>
@@ -46,6 +47,8 @@ void dump_regs(struct interrupt_context *ctx) {
 	return;
 }
 
+void force_unlock_console() { fbcon.lock.locked = 0; }
+
 void isr_generic_handler(struct interrupt_context *ctx) {
 	pushcli();
 	switch (ctx->vector_number) {
@@ -58,6 +61,7 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 		keyboard_handler(ctx);
 		break;
 	default:
+		force_unlock_console();
 		printk("Unrecognized interrupt! v=%x\n", ctx->vector_number);
 		dump_regs(ctx);
 		hcf();

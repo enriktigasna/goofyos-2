@@ -47,6 +47,10 @@ bool is_mapped(void *virt) {
 	volatile uint64_t *table = pt + get_index(level, virt);
 	while (level) {
 		uint64_t value = *table;
+		if (*table & PG_PS) {
+			return true;
+		}
+
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
 		} else {
@@ -55,6 +59,7 @@ bool is_mapped(void *virt) {
 
 		level--;
 		table = (uint64_t *)__va(value) + get_index(level, virt);
+		printk("Level %d %p\n", level, table);
 	}
 
 	if (*table & PG_PRESENT) {
@@ -62,6 +67,42 @@ bool is_mapped(void *virt) {
 	} else {
 		return false;
 	}
+}
+
+uint64_t __virt_offset(int level, void *virt) {
+	uint64_t page_size = 0x1000;
+	for (int i = 0; i < level; i++) {
+		page_size *= 0x1000;
+	}
+
+	return (uint64_t)virt & (page_size - 1);
+}
+
+uint64_t virt_to_phys(void *virt) {
+	uint64_t *pt = (uint64_t *)__va(__readcr3());
+
+	int level = 3;
+
+	volatile uint64_t *table = pt + get_index(level, virt);
+
+	while (level) {
+		uint64_t value = *table;
+		if (*table & PG_PS) {
+			return (*table & 0x7ffffffffffff000) +
+			       __virt_offset(level, virt);
+		}
+
+		if (*table & PG_PRESENT) {
+			value &= 0x7ffffffffffff000;
+		} else {
+			return 0;
+		}
+
+		level--;
+		table = (uint64_t *)__va(value) + get_index(level, virt);
+	}
+
+	return (*table & 0x7ffffffffffff000) + __virt_offset(level, virt);
 }
 
 uint64_t *kernel_virtual_pt;

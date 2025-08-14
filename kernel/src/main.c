@@ -28,5 +28,9 @@ void kmain() {
 	printk("cr3 %p\n", cr3);
 	printk("va cr3 %p\n", __va(cr3));
 
+	void *virt = kmalloc(1048);
+	printk("Is mapped %p %d\n", virt, is_mapped(virt));
+	printk("Virt %p Phys %p\n", virt, virt_to_phys(virt));
+
 	hcf();
 }

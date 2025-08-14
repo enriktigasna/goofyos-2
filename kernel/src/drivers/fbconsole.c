@@ -4,16 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 
-struct fbconsole {
-	struct limine_framebuffer *fb;
-	uint16_t cursor_x;
-	uint16_t cursor_y;
-	uint16_t width;
-	uint16_t height;
-	uint32_t color;
-	struct spinlock lock;
-};
-
 struct fbconsole fbcon;
 
 void console_init(struct limine_framebuffer *framebuffer) {
