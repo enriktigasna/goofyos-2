@@ -1,3 +1,4 @@
 0xffffffff80000000 - kernel base
 0xffff800000000000 - hddm base
 0xffffc00000000000 - struct page sparse array
+0xffffd00000000000 - vmalloc arena

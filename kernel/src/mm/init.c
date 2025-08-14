@@ -2,6 +2,7 @@
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
+#include <goofy-os/vmalloc.h>
 #include <limine.h>
 #include <stdint.h>
 
@@ -30,4 +31,5 @@ void mm_init() {
 	pgalloc_init();
 	sparse_init();
 	slab_init();
+	vmalloc_init();
 }

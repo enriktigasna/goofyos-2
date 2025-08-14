@@ -62,4 +62,5 @@ size_t kmalloc_idx(size_t size) {
 // clang-format on
 void slab_init();
 void *kmalloc(size_t size);
+void *kzalloc(size_t size);
 void kfree(void *object);
