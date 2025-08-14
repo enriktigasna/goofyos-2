@@ -28,6 +28,7 @@ extern int mm_region_count;
 extern struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
 extern bool pgalloc_initialized;
 extern uint64_t hhdm_offset;
+extern uint64_t *kernel_virtual_pt;
 
 void mm_init();
 void pgalloc_init();
@@ -36,6 +37,7 @@ void *zpgalloc();
 void pgfree(void *page);
 void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags);
 
+void kernel_top_pgt_init();
 void sparse_init();
 bool is_mapped(void *virt);
 

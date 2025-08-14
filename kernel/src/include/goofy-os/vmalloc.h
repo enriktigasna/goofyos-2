@@ -10,6 +10,7 @@
 #define PAGE_COUNT(sz) (sz + (PAGE_SIZE - 1)) / PAGE_SIZE
 
 void *vmalloc(unsigned long size);
+void *vmalloc_flags(unsigned long size, uint64_t flags);
 void *vzalloc(unsigned long size);
 void vfree(const void *addr);
 

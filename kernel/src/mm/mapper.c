@@ -3,12 +3,7 @@
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <stdint.h>
-
-/* shout out Dbstream osdev page */
-/*
- *  https://wiki.osdev.org/User:Dbstream/Paging_on_x86
- *
- */
+#include <string.h>
 
 uint64_t get_index(int level, void *addr) {
 	return (uint64_t)addr >> (12 + 9 * level) & 0x1ff;
@@ -67,4 +62,25 @@ bool is_mapped(void *virt) {
 	} else {
 		return false;
 	}
+}
+
+uint64_t *kernel_virtual_pt;
+
+// All contexts can after this copy from kernel_virtual_pt and will be up to
+// date with higher half mappings
+void kernel_top_pgt_init() {
+	uint64_t *cr3 = (void *)(__readcr3() + hhdm_offset);
+	for (int i = 0x100; i < 0x200; i++) {
+		if (cr3[i]) {
+			continue;
+		}
+
+		cr3[i] = ((uint64_t)zpgalloc() - hhdm_offset) | PG_PRESENT |
+			 PG_WRITE;
+	}
+
+	kernel_virtual_pt = pgalloc();
+	memcpy(kernel_virtual_pt, cr3, 0x1000);
+
+	printk("Virtual pt %p\n", kernel_virtual_pt);
 }

@@ -1,9 +1,12 @@
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
+#include <goofy-os/spinlock.h>
 #include <goofy-os/vmalloc.h>
+#include <string.h>
 
 struct vmalloc_struct *root;
+struct spinlock vmalloc_lock;
 
 // I use linked list for simple implementation, its good enough
 // Eventually this might be a performance bottleneck,
@@ -52,6 +55,38 @@ void vmalloc_unmap_range(void *addr) {
 			curr->flags &= ~VM_INUSE;
 		}
 	}
+}
+
+void *_vmalloc(size_t size, uint64_t flags) {
+	size_t aligned_size = PAGE_COUNT(size) * PAGE_SIZE;
+	void *addr = vmalloc_map_range(aligned_size);
+
+	for (int i = 0; i < aligned_size / PAGE_SIZE; i++) {
+		uint64_t phys = (uint64_t)pgalloc() - hhdm_offset;
+		map_page(kernel_virtual_pt, phys, addr + PAGE_SIZE * i, flags);
+	}
+
+	return addr;
+}
+
+void *vmalloc_flags(size_t size, uint64_t flags) {
+	acquire(&vmalloc_lock);
+	void *virt = _vmalloc(size, flags);
+	release(&vmalloc_lock);
+	return virt;
+}
+
+void *vmalloc(size_t size) {
+	acquire(&vmalloc_lock);
+	void *virt = _vmalloc(size, PG_WRITE | PG_NX);
+	release(&vmalloc_lock);
+	return virt;
+}
+
+void *vzalloc(size_t size) {
+	void *virt = vmalloc(size);
+	memset(virt, 0, size);
+	return virt;
 }
 
 void vmalloc_init() {

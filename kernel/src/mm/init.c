@@ -29,6 +29,8 @@ void mm_init() {
 	setup_memmap_regions();
 
 	pgalloc_init();
+	kernel_top_pgt_init();
+
 	sparse_init();
 	slab_init();
 	vmalloc_init();

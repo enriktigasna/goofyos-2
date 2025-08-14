@@ -5,6 +5,7 @@
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
+#include <goofy-os/vmalloc.h>
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -25,8 +26,7 @@ void kmain() {
 
 	uint64_t cr3 = __readcr3();
 	printk("cr3 %p\n", cr3);
-
-	int count = 0;
+	printk("va cr3 %p\n", __va(cr3));
 
 	hcf();
 }

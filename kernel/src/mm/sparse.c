@@ -20,7 +20,7 @@ void __map_region_struct(struct mm_memmap_region *region, uint64_t *pt) {
 
 void sparse_init() {
 	// Map in all the pages that should contain struct page
-	uint64_t *pt = (uint64_t *)__va(__readcr3());
+	uint64_t *pt = (uint64_t *)kernel_virtual_pt;
 
 	for (int i = 0; i < mm_region_count; i++) {
 		__map_region_struct(&mm_phys_regions[i], pt);
