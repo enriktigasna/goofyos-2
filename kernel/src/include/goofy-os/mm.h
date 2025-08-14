@@ -38,6 +38,7 @@ void *pgalloc();
 void *zpgalloc();
 void pgfree(void *page);
 void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags);
+void unmap_page(uint64_t *pt, void *virt);
 
 void kernel_top_pgt_init();
 void sparse_init();

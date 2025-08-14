@@ -12,11 +12,7 @@
 void *vmalloc(unsigned long size);
 void *vmalloc_flags(unsigned long size, uint64_t flags);
 void *vzalloc(unsigned long size);
-void vfree(const void *addr);
-
-void *vmap(struct page **pages, unsigned int count, unsigned long flags,
-	   uint64_t prot);
-void *vunmap(const void *addr);
+void vfree(void *range);
 
 void vmalloc_init();
 
