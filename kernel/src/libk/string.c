@@ -29,3 +29,11 @@ void *memmove(void *dstptr, const void *srcptr, size_t size) {
 	}
 	return dstptr;
 }
+
+int strncmp(char *str1, char *str2, int n) {
+	for (int i = 0; i < n; i++) {
+		if (str1[i] != str2[i])
+			return i;
+	}
+	return 0;
+}

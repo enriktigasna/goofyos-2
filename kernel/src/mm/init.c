@@ -25,7 +25,6 @@ static void setup_memmap_regions() {
 }
 
 void mm_init() {
-	hhdm_offset = __limine_hhdm_response->offset;
 	setup_memmap_regions();
 
 	pgalloc_init();

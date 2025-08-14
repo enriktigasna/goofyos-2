@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <limine.h>
 #include <goofy-os/hcf.h>
+#include <goofy-os/mm.h>
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(3);
@@ -26,6 +27,18 @@ static volatile struct limine_hhdm_request hhdm_request = {
 	.revision = 0,
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_mp_request mp_request = {
+    	.id = LIMINE_MP_REQUEST,
+	.revision = 0,
+	.flags = LIMINE_MP_X2APIC
+};
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_rsdp_request rsdp_request = {
+    	.id = LIMINE_RSDP_REQUEST,
+	.revision = 0,
+};
 
 __attribute__((used, section(".limine_requests_start")))
 static volatile LIMINE_REQUESTS_START_MARKER;
@@ -37,6 +50,8 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 struct limine_framebuffer* __limine_framebuffer;
 struct limine_memmap_response* __limine_memmap_response;
 struct limine_hhdm_response* __limine_hhdm_response;
+struct limine_mp_response* __limine_mp_response;
+struct limine_rsdp_response* __limine_rsdp_response;
 
 void limine_init() {
         if (LIMINE_BASE_REVISION_SUPPORTED == false) {
@@ -60,8 +75,19 @@ void limine_init() {
 	if (hhdm_request.response == NULL) {
                 hcf();
         }
+	
+	if (mp_request.response == NULL) {
+                hcf();
+        }
+	
+	if (rsdp_request.response == NULL) {
+                hcf();
+        }
 
         __limine_framebuffer = framebuffer_request.response->framebuffers[0];
 	__limine_memmap_response = memmap_request.response;
 	__limine_hhdm_response = hhdm_request.response;
+	__limine_mp_response = mp_request.response;
+	__limine_rsdp_response = rsdp_request.response;
+	hhdm_offset = __limine_hhdm_response->offset;
 }

@@ -55,10 +55,10 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 	case 0x3:
 		break;
 	case 0x20:
-		timer_handler(ctx);
+		// timer_handler(ctx);
 		break;
 	case 0x21:
-		keyboard_handler(ctx);
+		// keyboard_handler(ctx);
 		break;
 	default:
 		force_unlock_console();

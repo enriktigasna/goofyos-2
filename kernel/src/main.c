@@ -19,17 +19,12 @@ void kmain() {
 	pushcli();
 	limine_init();
 	console_init(__limine_framebuffer);
-	cpu_init();
 	mm_init();
+	cpu_init();
 
 	printk("Welcome to GoofyOS\n");
 
-	uint64_t cr3 = __readcr3();
-	printk("cr3 %p\n", cr3);
-	printk("va cr3 %p\n", __va(cr3));
-
-	void *virt = vmalloc(0x4000);
-	printk("Vmalloced %p\n", virt);
-
+	while (true)
+		;
 	hcf();
 }

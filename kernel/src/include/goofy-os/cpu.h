@@ -1,11 +1,14 @@
 #pragma once
 #include <goofy-os/interrupts.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define GDT_OFFSET_KERNEL_CODE 0x08
 #define GDT_OFFSET_KERNEL_DATA 0x10
 #define GDT_OFFSET_USER_CODE 0x18
 #define GDT_OFFSET_USER_DATA 0x20
+
+#define MAX_CPUS 0x40
 
 struct gdtr {
 	uint16_t limit;
@@ -49,6 +52,10 @@ inline uint8_t inb(uint16_t port) {
 	return ret;
 }
 
+struct cpu {};
+extern size_t cpu_count;
+extern struct cpu logical_cpus[MAX_CPUS];
+
 inline void io_wait(void) { outb(0x80, 0); }
 void pic_remap(uint8_t offset1, uint8_t offset2);
 void pic_eoi(uint8_t irq);
@@ -57,3 +64,5 @@ void vm_invalidate(void *entry);
 
 void pushcli();
 void popcli();
+
+void parse_sdts();
