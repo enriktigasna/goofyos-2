@@ -5,3 +5,6 @@
 /src/limine.h
 /bin
 /obj
+/src/uacpi
+/src/include/uacpi
+/_tmp

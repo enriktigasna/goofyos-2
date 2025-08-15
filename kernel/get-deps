@@ -78,3 +78,13 @@ download_by_hash \
     https://github.com/limine-bootloader/limine/raw/4687a182be23939c2d9f15db970382dc353ed956/limine.h \
     src/limine.h \
     6879e626f34c1be25ac2f72bf43b083fc2b53887280bb0fcdaee790e258c6974
+
+# Download it and copy it in
+clone_repo_commit \
+    https://github.com/uACPI/uACPI \
+    _tmp/uacpi \
+    a6eb761f267eb83f3f05ef85005b646b23f9e2c7
+
+mv _tmp/uacpi/include/uacpi src/include/uacpi
+mv _tmp/uacpi/source src/uacpi
+rm -rf _tmp
