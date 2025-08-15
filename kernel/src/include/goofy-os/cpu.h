@@ -10,6 +10,7 @@
 
 #define MAX_CPUS 0x10
 #define MAX_IOAPICS 8
+#define KERNEL_STACK_SIZE 0x10000
 
 struct gdtr {
 	uint16_t limit;

@@ -4,7 +4,4 @@ Goofy operating system
 
 
     TODO
-Integrate UACPI
-Rework logging system, make dmesg buffer
-SMP and such..
-Make mutexes, that try for x seconds, or just once
+INTEGRATE SYNCHRONIZATION WITH MAPPING

@@ -9,7 +9,11 @@ uint64_t get_index(int level, void *addr) {
 	return (uint64_t)addr >> (12 + 9 * level) & 0x1ff;
 }
 
-void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags) {
+void map_page(struct page_table *pt, uint64_t phys, void *virt,
+	      uint64_t flags) {
+	acquire(&pt->lock);
+	uint64_t *cr3 = pt->cr3;
+
 	if (flags & ~PG_FLAGMASK) {
 		printk("Flagmask is %p you gave it %p\n", PG_FLAGMASK, flags);
 		printk("%p\n", flags & ~PG_FLAGMASK);
@@ -18,7 +22,7 @@ void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags) {
 
 	int level = 3;
 
-	volatile uint64_t *table = pt + get_index(level, virt);
+	volatile uint64_t *table = cr3 + get_index(level, virt);
 
 	while (level) {
 		uint64_t value = *table;
@@ -36,12 +40,16 @@ void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags) {
 	*table = (uint64_t)phys | flags | PG_PRESENT;
 
 	vm_invalidate(virt);
+	release(&pt->lock);
 }
 
-void unmap_page(uint64_t *pt, void *virt) {
+void unmap_page(struct page_table *pt, void *virt) {
+	acquire(&pt->lock);
+	uint64_t *cr3 = pt->cr3;
+
 	int level = 3;
 
-	volatile uint64_t *table = pt + get_index(level, virt);
+	volatile uint64_t *table = cr3 + get_index(level, virt);
 
 	while (level) {
 		uint64_t value = *table;
@@ -58,22 +66,26 @@ void unmap_page(uint64_t *pt, void *virt) {
 	*table = 0;
 
 	vm_invalidate(virt);
+	release(&pt->lock);
 }
 
-bool is_mapped(void *virt) {
-	uint64_t *pt = (uint64_t *)__va(__readcr3());
+bool is_mapped(struct page_table *pt, void *virt) {
+	acquire(&pt->lock);
 
+	uint64_t *cr3 = pt->cr3;
 	int level = 3;
-	volatile uint64_t *table = pt + get_index(level, virt);
+	volatile uint64_t *table = cr3 + get_index(level, virt);
 	while (level) {
 		uint64_t value = *table;
 		if (*table & PG_PS) {
+			release(&pt->lock);
 			return true;
 		}
 
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
 		} else {
+			release(&pt->lock);
 			return false;
 		}
 
@@ -83,8 +95,10 @@ bool is_mapped(void *virt) {
 	}
 
 	if (*table & PG_PRESENT) {
+		release(&pt->lock);
 		return true;
 	} else {
+		release(&pt->lock);
 		return false;
 	}
 }
@@ -125,11 +139,12 @@ uint64_t virt_to_phys(void *virt) {
 	return (*table & 0x7ffffffffffff000) + __virt_offset(level, virt);
 }
 
-uint64_t *kernel_virtual_pt;
+struct page_table *kernel_virtual_pt;
 
 // All contexts can after this copy from kernel_virtual_pt and will be up to
 // date with higher half mappings
 void kernel_top_pgt_init() {
+	kernel_virtual_pt = zpgalloc();
 	uint64_t *cr3 = (void *)(__readcr3() + hhdm_offset);
 	for (int i = 0x100; i < 0x200; i++) {
 		if (cr3[i]) {
@@ -140,8 +155,8 @@ void kernel_top_pgt_init() {
 			 PG_WRITE;
 	}
 
-	kernel_virtual_pt = pgalloc();
-	memcpy(kernel_virtual_pt, cr3, 0x1000);
+	kernel_virtual_pt->cr3 = pgalloc();
+	memcpy(kernel_virtual_pt->cr3, cr3, 0x1000);
 
 	printk("Virtual pt %p\n", kernel_virtual_pt);
 }

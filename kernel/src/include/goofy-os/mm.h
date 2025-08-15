@@ -22,6 +22,11 @@ struct mm_memmap_region {
 	uint64_t size;
 };
 
+struct page_table {
+	uint64_t *cr3;
+	struct spinlock lock;
+};
+
 struct kmem_struct {
 	struct spinlock lock;
 };
@@ -30,19 +35,19 @@ extern int mm_region_count;
 extern struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
 extern bool pgalloc_initialized;
 extern uint64_t hhdm_offset;
-extern uint64_t *kernel_virtual_pt;
+extern struct page_table *kernel_virtual_pt;
 
 void mm_init();
 void pgalloc_init();
 void *pgalloc();
 void *zpgalloc();
 void pgfree(void *page);
-void map_page(uint64_t *pt, uint64_t phys, void *virt, uint64_t flags);
-void unmap_page(uint64_t *pt, void *virt);
+void map_page(struct page_table *pt, uint64_t phys, void *virt, uint64_t flags);
+void unmap_page(struct page_table *pt, void *virt);
 
 void kernel_top_pgt_init();
 void sparse_init();
-bool is_mapped(void *virt);
+bool is_mapped(struct page_table *pt, void *virt);
 uint64_t virt_to_phys(void *virt);
 
 struct page {
