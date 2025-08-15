@@ -6,14 +6,14 @@
 
 void timer_handler(struct interrupt_context *ctx) {
 	// printk(".");
-	pic_eoi(ctx->vector_number - 0x20);
+	// pic_eoi(ctx->vector_number - 0x20);
 	return;
 }
 
 void keyboard_handler(struct interrupt_context *ctx) {
 	uint8_t scancode = inb(0x60);
 	if (scancode & 0x80) {
-		pic_eoi(ctx->vector_number - 0x20);
+		// pic_eoi(ctx->vector_number - 0x20);
 		return;
 	}
 
@@ -23,7 +23,7 @@ void keyboard_handler(struct interrupt_context *ctx) {
 	if (ascii_translation) {
 		printk("%c", ascii_translation);
 	}
-	pic_eoi(ctx->vector_number - 0x20);
+	// pic_eoi(ctx->vector_number - 0x20);
 	return;
 }
 

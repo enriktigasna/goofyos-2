@@ -8,7 +8,8 @@
 #define GDT_OFFSET_USER_CODE 0x18
 #define GDT_OFFSET_USER_DATA 0x20
 
-#define MAX_CPUS 0x40
+#define MAX_CPUS 0x10
+#define MAX_IOAPICS 8
 
 struct gdtr {
 	uint16_t limit;
@@ -52,15 +53,28 @@ inline uint8_t inb(uint16_t port) {
 	return ret;
 }
 
-struct cpu {};
-extern size_t cpu_count;
-extern struct cpu logical_cpus[MAX_CPUS];
+struct cpu {
+	size_t lapic_id;
+	size_t cli_count;
+};
+
+struct ioapic {
+	void *base;
+};
+
+extern size_t n_cpus;
+extern struct cpu cpu_cores[MAX_CPUS];
+extern struct ioapic ioapics[MAX_IOAPICS];
 
 inline void io_wait(void) { outb(0x80, 0); }
-void pic_remap(uint8_t offset1, uint8_t offset2);
-void pic_eoi(uint8_t irq);
+void pic_disable();
 uint64_t __readcr3();
 void vm_invalidate(void *entry);
 
 void pushcli();
 void popcli();
+
+void ioapic_write(struct ioapic *ioapic, uint8_t offset, uint32_t val);
+uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset, uint32_t val);
+
+void x2apic_write();

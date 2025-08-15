@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <limine.h>
 #include <goofy-os/hcf.h>
+#include <goofy-os/cpu.h>
 #include <goofy-os/mm.h>
 
 __attribute__((used, section(".limine_requests")))
@@ -90,4 +91,13 @@ void limine_init() {
 	__limine_mp_response = mp_request.response;
 	__limine_rsdp_response = rsdp_request.response;
 	hhdm_offset = __limine_hhdm_response->offset;
+
+	n_cpus = mp_request.response->cpu_count;
+	
+	for (int i = 0; i < n_cpus; i++)
+	{
+		cpu_cores[i].lapic_id = mp_request.response->cpus[i]->lapic_id;	
+		cpu_cores[i].cli_count = 1;
+	}
+	
 }

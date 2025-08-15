@@ -17,7 +17,6 @@
  */
 
 void kmain() {
-	pushcli();
 	limine_init();
 	console_init(__limine_framebuffer);
 
