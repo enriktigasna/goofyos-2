@@ -78,4 +78,8 @@ void popcli();
 void ioapic_write(struct ioapic *ioapic, uint8_t offset, uint32_t val);
 uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset, uint32_t val);
 
-void x2apic_write();
+extern void **kernel_stacks;
+void cpu_wakeup();
+
+uint64_t current_cpuid();
+void new_cpu_wait();

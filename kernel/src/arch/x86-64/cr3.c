@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 
 uint64_t __readcr3() {
