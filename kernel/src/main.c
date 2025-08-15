@@ -15,10 +15,14 @@
  * 2. Initialize CPU state with IDT, GDT, etc.
  * 3. Initialize memory manager
  */
+
 void kmain() {
 	pushcli();
 	limine_init();
 	console_init(__limine_framebuffer);
+
+	init_gdt();
+	init_idt();
 	mm_init();
 	cpu_init();
 

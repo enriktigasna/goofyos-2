@@ -1,7 +1,7 @@
+#include <goofy-os/acpi.h>
 #include <goofy-os/cpu.h>
 
 void cpu_init() {
-	init_gdt();
-	init_idt();
-	parse_sdts();
+	acpi_init();
+	// hh
 }

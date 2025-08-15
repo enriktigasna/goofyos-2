@@ -68,6 +68,7 @@ override CPPFLAGS := \
     -isystem freestnd-c-hdrs \
     $(CPPFLAGS) \
     -DLIMINE_API_REVISION=3 \
+    -DUACPI_BAREBONES_MODE=1 \
     -MMD \
     -MP
 

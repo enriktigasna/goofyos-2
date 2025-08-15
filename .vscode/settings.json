@@ -78,10 +78,14 @@
 		"text_encoding": "c",
 		"cinttypes": "c",
 		"typeinfo": "c",
-		"variant": "c"
+		"variant": "c",
+		"helpers.h": "c",
+		"registers.h": "c",
+		"uacpi.h": "c"
 	},
 	"C_Cpp.default.defines": [
-		"LIMINE_API_REVISION=3"
+		"LIMINE_API_REVISION=3",
+		"UACPI_BAREBONES_MODE=1"
 	],
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/**"

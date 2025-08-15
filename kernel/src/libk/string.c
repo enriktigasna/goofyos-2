@@ -34,6 +34,20 @@ int strncmp(char *str1, char *str2, int n) {
 	for (int i = 0; i < n; i++) {
 		if (str1[i] != str2[i])
 			return i;
+
+		if (!str1[i]) {
+			return 0;
+		}
+	}
+	return 0;
+}
+
+int memcmp(char *str1, char *str2, int n) {
+	for (int i = 0; i < n; i++) {
+		if (str1[i] < str2[i])
+			return -1;
+		if (str1[i] > str2[i])
+			return 1;
 	}
 	return 0;
 }

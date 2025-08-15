@@ -127,3 +127,32 @@ void vmalloc_init() {
 
 	void *vaddr;
 }
+
+void *vmap_contiguous(uint64_t phys_addr, size_t size) {
+	uint64_t aligned_addr = phys_addr & ~0xfff;
+	uint64_t page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+	acquire(&vmalloc_lock);
+	void *range = _vmalloc(page_count * PAGE_SIZE, PG_WRITE | PG_NX);
+
+	for (int i = 0; i < page_count; i++) {
+		map_page(kernel_virtual_pt, aligned_addr + i * PAGE_SIZE,
+			 range + i * PAGE_SIZE, PG_WRITE | PG_NX);
+	}
+
+	release(&vmalloc_lock);
+
+	return range + (phys_addr & 0xfff);
+}
+
+void vunmap_contiguous(void *range) {
+	acquire(&vmalloc_lock);
+	struct vmalloc_struct *curr;
+	for (curr = root; curr; curr = curr->next) {
+		if (curr->addr == range) {
+			curr->flags &= ~VM_INUSE;
+			return;
+		}
+	}
+	release(&vmalloc_lock);
+}

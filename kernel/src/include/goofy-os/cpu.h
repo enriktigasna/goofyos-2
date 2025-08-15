@@ -64,5 +64,3 @@ void vm_invalidate(void *entry);
 
 void pushcli();
 void popcli();
-
-void parse_sdts();

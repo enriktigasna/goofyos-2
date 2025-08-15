@@ -1,5 +1,6 @@
-// Needed functions:
+#pragma once
 #include <goofy-os/mm.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define VMALLOC_START 0xffffd00000000000
@@ -9,10 +10,13 @@
 
 #define PAGE_COUNT(sz) (sz + (PAGE_SIZE - 1)) / PAGE_SIZE
 
-void *vmalloc(unsigned long size);
-void *vmalloc_flags(unsigned long size, uint64_t flags);
-void *vzalloc(unsigned long size);
+void *vmalloc(size_t size);
+void *vmalloc_flags(size_t size, uint64_t flags);
+void *vzalloc(size_t size);
 void vfree(void *range);
+
+void *vmap_contiguous(uint64_t phys_addr, size_t size);
+void vunmap_contiguous(void *range);
 
 void vmalloc_init();
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <limine.h>
 
 void limine_init();
 extern struct limine_framebuffer *__limine_framebuffer;
