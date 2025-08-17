@@ -55,8 +55,7 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 	case 0x3:
 		break;
 	case 0x20:
-		// timer_handler(ctx);
-		printk("%c", '1' + current_cpuid());
+		// printk("%c", '0' + current_cpuid());
 		x2apic_eoi();
 		break;
 	case 0x21:
