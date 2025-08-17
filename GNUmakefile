@@ -23,7 +23,18 @@ all-hdd: $(IMAGE_NAME).hdd
 .PHONY: run
 run: $(IMAGE_NAME).iso
 	qemu-system-x86_64 \
+		-M q35 \
+    -cpu qemu64,x2apic=on \
+		-smp 4 \
+		-cdrom $(IMAGE_NAME).iso \
+		-boot d \
+		$(QEMUFLAGS)
+
+.PHONY: run
+run-kvm: $(IMAGE_NAME).iso
+	qemu-system-x86_64 \
 		-M q35,accel=kvm \
+    -cpu qemu64,x2apic=on \
 		-smp 4 \
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \

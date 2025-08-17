@@ -132,6 +132,10 @@ void *vmap_contiguous(uint64_t phys_addr, size_t size) {
 	uint64_t aligned_addr = phys_addr & ~0xfff;
 	uint64_t page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 
+	// If we cross page boundary, we need one more
+	if (phys_addr << 12 < (phys_addr + size) << 12)
+		page_count++;
+
 	acquire(&vmalloc_lock);
 	void *range = _vmalloc(page_count * PAGE_SIZE, PG_WRITE | PG_NX);
 

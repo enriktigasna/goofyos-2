@@ -93,7 +93,6 @@ void limine_init() {
 	hhdm_offset = __limine_hhdm_response->offset;
 
 	n_cpus = mp_request.response->cpu_count;
-	
 	for (int i = 0; i < n_cpus; i++)
 	{
 		cpu_cores[i].lapic_id = mp_request.response->cpus[i]->lapic_id;	

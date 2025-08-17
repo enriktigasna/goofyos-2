@@ -54,9 +54,22 @@ inline uint8_t inb(uint16_t port) {
 	return ret;
 }
 
+inline void rdmsr(uint32_t msr, uint64_t *val) {
+	uint32_t *lo = (uint32_t *)val;
+	uint32_t *hi = (uint32_t *)((uint64_t)val + 4);
+	__asm__ volatile("rdmsr" : "=a"(*lo), "=d"(*hi) : "c"(msr));
+}
+
+inline void wrmsr(uint32_t msr, uint64_t val) {
+	uint32_t lo = val & 0xffffffff;
+	uint32_t hi = val >> 32;
+	__asm__ volatile("wrmsr" ::"a"(lo), "d"(hi), "c"(msr));
+}
+
 struct cpu {
 	size_t lapic_id;
 	size_t cli_count;
+	uint64_t hz;
 };
 
 struct ioapic {
@@ -83,3 +96,7 @@ void cpu_wakeup();
 
 uint64_t current_cpuid();
 void new_cpu_wait();
+void x2apic_init_timer();
+
+void pit_program_mode2(uint16_t div);
+uint16_t pit_read_counter(void);
