@@ -33,5 +33,7 @@ void cpu_init() {
 	detect_x2apic();
 	acpi_init();
 	hpet_init();
+	x2apic_calibrate_timer();
+	x2apic_init_timer();
 	smp_init();
 }

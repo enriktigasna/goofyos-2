@@ -4,17 +4,21 @@
 
 #define X2APIC_MSR_BASE 0x800
 #define X2APIC_DISABLE 0x10000
+#define X2APIC_SVR_ENABLE 0x100
 
 #define X2APIC_TASKPRIOR 0x8
-#define X2APIC_EOI 0x80B
+#define X2APIC_EOI 0xB
 #define X2APIC_TIMER_DIV 0x3E
 #define X2APIC_LDR 0xD
+#define X2APIC_SVR 0xF
 #define X2APIC_LVT_TMR 0x32
 #define X2APIC_LVT_PERF 0x34
 #define X2APIC_LVT_LINT0 0x35
 #define X2APIC_LVT_LINT1 0x36
 #define X2APIC_TIMER_INITCNT 0x38
 #define X2APIC_TIMER_CURCNT 0x39
+
+#define APICTMR_PERIODIC 0x20000
 
 #define IOAPICREDTBL(n) (0x10 + 2 * n)
 
@@ -29,8 +33,6 @@ uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset, uint32_t val) {
 	*(volatile uint32_t *)ioapic->base = offset;
 	return *(volatile uint32_t *)(ioapic->base + 0x10);
 }
-
-void x2apic_eoi() { wrmsr(X2APIC_EOI, 0); }
 
 void pit_program_mode2(uint16_t div) {
 	outb(0x43, 0x34); // ch0, lobyte/hibyte, mode 2, binary
@@ -57,4 +59,20 @@ inline uint64_t x2apic_read(uint32_t reg) {
 	return val;
 }
 
-void x2apic_init_timer() { printk("TODO INIT TIMER\n"); }
+inline void x2apic_eoi() { x2apic_write(X2APIC_EOI, 0); }
+
+uint64_t ticks_in_10ms;
+void x2apic_calibrate_timer() {
+	x2apic_write(X2APIC_TIMER_DIV, 0x3);
+	x2apic_write(X2APIC_TIMER_INITCNT, 0xFFFFFFFF);
+	hpet_wait_us(10000);
+	x2apic_write(X2APIC_LVT_TMR, X2APIC_DISABLE);
+	ticks_in_10ms = 0xFFFFFFFF - x2apic_read(X2APIC_TIMER_CURCNT);
+}
+
+void x2apic_init_timer() {
+	x2apic_write(X2APIC_LVT_TMR, 0x20 | APICTMR_PERIODIC);
+	x2apic_write(X2APIC_TIMER_DIV, 0x3);
+	x2apic_write(X2APIC_TIMER_INITCNT, ticks_in_10ms);
+	x2apic_write(X2APIC_SVR, 0xFF | X2APIC_SVR_ENABLE);
+}

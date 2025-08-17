@@ -21,6 +21,8 @@ struct idtr {
 	uint16_t limit;
 	uint64_t base;
 } __attribute__((packed));
+extern struct idtr idt_register;
+extern struct gdtr gdt_register;
 
 struct idt_entry {
 	uint16_t isr_low;
@@ -96,7 +98,9 @@ void cpu_wakeup();
 
 uint64_t current_cpuid();
 void new_cpu_wait();
+void x2apic_calibrate_timer();
 void x2apic_init_timer();
+void x2apic_eoi();
 
 void pit_program_mode2(uint16_t div);
 uint16_t pit_read_counter(void);

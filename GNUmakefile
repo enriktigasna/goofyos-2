@@ -33,7 +33,7 @@ run: $(IMAGE_NAME).iso
 .PHONY: run
 run-kvm: $(IMAGE_NAME).iso
 	qemu-system-x86_64 \
-		-M q35,accel=kvm \
+		-M q35,accel=kvm,kernel_irqchip=off \
     -cpu qemu64,x2apic=on \
 		-smp 4 \
 		-cdrom $(IMAGE_NAME).iso \

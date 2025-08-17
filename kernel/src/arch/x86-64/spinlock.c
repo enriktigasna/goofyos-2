@@ -4,7 +4,6 @@
 
 size_t cli_count;
 
-// TODO: SMP Support (use current->cpu)
 void pushcli() {
 	struct cpu *curr_cpu = &cpu_cores[current_cpuid()];
 	curr_cpu->cli_count++;
