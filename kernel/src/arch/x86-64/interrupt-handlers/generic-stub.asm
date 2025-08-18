@@ -1558,6 +1558,8 @@ isr_generic_stub:
     push rbp
     mov rdi, rsp
     call isr_generic_handler
+
+retpoline:
     pop rbp
     pop rax
     pop rbx
@@ -1576,3 +1578,7 @@ isr_generic_stub:
 
     add rsp, 16
     iretq
+
+return_to_ctx:
+    mov rsp, rdi
+    jmp retpoline

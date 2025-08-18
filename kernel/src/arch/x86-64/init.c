@@ -51,8 +51,12 @@ void tss_init() {
 	uint64_t gdt_idx = 5;
 	for (int i = 0; i < n_cpus; i++) {
 		struct tss *task_seg = kzalloc(sizeof(struct tss));
-		void *exception_stack = vmalloc(INTERRUPT_STACK_SIZE);
-		void *interrupt_stack = vmalloc(INTERRUPT_STACK_SIZE);
+
+		// Stack grows downward, 16 aligned, this is why its like this
+		void *exception_stack =
+		    vmalloc(INTERRUPT_STACK_SIZE) + INTERRUPT_STACK_SIZE - 0x10;
+		void *interrupt_stack =
+		    vmalloc(INTERRUPT_STACK_SIZE) + INTERRUPT_STACK_SIZE - 0x10;
 
 		task_seg->ist1_high = (uint64_t)exception_stack >> 32;
 		task_seg->ist1_low = (uint64_t)exception_stack & 0xFFFFFFFF;

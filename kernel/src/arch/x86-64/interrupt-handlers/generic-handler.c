@@ -4,13 +4,13 @@
 #include <goofy-os/printk.h>
 #include <goofy-os/scancode.h>
 
-void timer_handler(struct interrupt_context *ctx) {
+void timer_handler(struct registers *ctx) {
 	// printk("%c", '0' + current_cpuid());
 	x2apic_eoi();
 	return;
 }
 
-void keyboard_handler(struct interrupt_context *ctx) {
+void keyboard_handler(struct registers *ctx) {
 	uint8_t scancode = inb(0x60);
 	if (scancode & 0x80) {
 		// pic_eoi(ctx->vector_number - 0x20);
@@ -27,7 +27,7 @@ void keyboard_handler(struct interrupt_context *ctx) {
 	return;
 }
 
-void dump_regs(struct interrupt_context *ctx) {
+void dump_regs(struct registers *ctx) {
 	printk("rax: %p\n", ctx->rax);
 	printk("rbx: %p\n", ctx->rbx);
 	printk("rcx: %p\n", ctx->rcx);
@@ -43,13 +43,13 @@ void dump_regs(struct interrupt_context *ctx) {
 	printk("r14: %p\n", ctx->r14);
 	printk("r15: %p\n", ctx->r15);
 
-	printk("rip: %p\n", ctx->iret_rip);
+	printk("rip: %p\n", ctx->rip);
 	return;
 }
 
 void force_unlock_console() { fbcon.lock.locked = 0; }
 
-void isr_generic_handler(struct interrupt_context *ctx) {
+void isr_generic_handler(struct registers *ctx) {
 	pushcli();
 	switch (ctx->vector_number) {
 	case 0x3:

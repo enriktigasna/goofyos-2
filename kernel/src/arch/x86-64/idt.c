@@ -13,7 +13,7 @@ void __idt_set_entry(uint8_t idx, uint64_t handler, uint8_t flags,
 
 	entry->isr_low = handler & 0xFFFF;
 	entry->kernel_cs = GDT_OFFSET_KERNEL_CODE;
-	entry->ist = 0;
+	entry->ist = ist;
 	entry->attributes = flags;
 	entry->isr_mid = (handler >> 16) & 0xFFFF;
 	entry->isr_high = (handler >> 32) & 0xFFFFFFFF;
