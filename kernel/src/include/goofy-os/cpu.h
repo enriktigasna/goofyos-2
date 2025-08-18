@@ -1,5 +1,6 @@
 #pragma once
 #include <goofy-os/interrupts.h>
+#include <goofy-os/sched.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,7 +12,9 @@
 #define MAX_CPUS 0x10
 #define MAX_IOAPICS 8
 #define KERNEL_STACK_SIZE 0x10000
+#define INTERRUPT_STACK_SIZE 0x8000
 
+extern uint64_t gdt_table[255];
 struct gdtr {
 	uint16_t limit;
 	uint64_t base;
@@ -21,6 +24,61 @@ struct idtr {
 	uint16_t limit;
 	uint64_t base;
 } __attribute__((packed));
+
+struct tss_desc {
+	uint16_t limit_low;
+	uint16_t base_low;
+	uint8_t base_mid1;
+	uint8_t type : 4;
+	uint8_t zero : 1;
+	uint8_t dpl : 2;
+	uint8_t p : 1;
+	uint8_t limit_high : 4;
+	uint8_t avl : 1;
+	uint8_t zero2 : 2;
+	uint8_t g : 1;
+	uint8_t base_mid2;
+	uint32_t base_high;
+	uint32_t reserved;
+} __attribute__((packed));
+
+struct tss {
+	uint32_t reserved0;
+
+	uint32_t rsp0_low;
+	uint32_t rsp0_high;
+
+	uint32_t rsp1_low;
+	uint32_t rsp1_high;
+
+	uint32_t rsp2_low;
+	uint32_t rsp2_high;
+
+	uint32_t reserved1;
+	uint32_t reserved2;
+
+	uint32_t ist1_low;
+	uint32_t ist1_high;
+	uint32_t ist2_low;
+	uint32_t ist2_high;
+	uint32_t ist3_low;
+	uint32_t ist3_high;
+	uint32_t ist4_low;
+	uint32_t ist4_high;
+	uint32_t ist5_low;
+	uint32_t ist5_high;
+	uint32_t ist6_low;
+	uint32_t ist6_high;
+	uint32_t ist7_low;
+	uint32_t ist7_high;
+
+	uint32_t reserved3;
+	uint32_t reserved4;
+
+	uint16_t iomap_base;
+	uint16_t reserved5;
+} __attribute__((packed));
+
 extern struct idtr idt_register;
 extern struct gdtr gdt_register;
 
@@ -72,6 +130,8 @@ struct cpu {
 	size_t lapic_id;
 	size_t cli_count;
 	uint64_t hz;
+	struct task *current_task;
+	struct tss *tss;
 };
 
 struct ioapic {
@@ -104,3 +164,4 @@ void x2apic_eoi();
 
 void pit_program_mode2(uint16_t div);
 uint16_t pit_read_counter(void);
+void tss_percpu_init();

@@ -44,7 +44,7 @@ run-kvm: $(IMAGE_NAME).iso
 debug: $(IMAGE_NAME).iso
 	qemu-system-x86_64 \
 		-M q35,accel=kvm \
-		-smp 4 \
+		-smp 2 \
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \
 		$(QEMUFLAGS) \

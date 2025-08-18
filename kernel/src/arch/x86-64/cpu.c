@@ -13,8 +13,8 @@ void new_cpu_wait() {
 	set_idt(&idt_register);
 	set_gdt(&gdt_register);
 
-	printk("LAPIC: \n");
 	x2apic_init_timer();
+	tss_percpu_init();
 	popcli();
 	while (true)
 		;

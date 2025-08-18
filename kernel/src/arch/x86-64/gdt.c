@@ -1,7 +1,7 @@
 #include <goofy-os/cpu.h>
 #include <stdint.h>
 
-uint64_t gdt_table[5];
+uint64_t gdt_table[255];
 struct gdtr gdt_register;
 
 void init_gdt() {

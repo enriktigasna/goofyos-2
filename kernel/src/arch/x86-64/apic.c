@@ -71,19 +71,8 @@ void x2apic_calibrate_timer() {
 }
 
 void x2apic_init_timer() {
-	printk("Initializing lapic timer\n");
-
 	x2apic_write(X2APIC_SVR, 0xFF | X2APIC_SVR_ENABLE);
 	x2apic_write(X2APIC_LVT_TMR, 0x20 | APICTMR_PERIODIC);
 	x2apic_write(X2APIC_TIMER_DIV, 0x3);
 	x2apic_write(X2APIC_TIMER_INITCNT, ticks_in_10ms);
-
-	if (current_cpuid() == 1) {
-		printk("Core %d\n", current_cpuid());
-		printk("SVR: %p\n", x2apic_read(X2APIC_SVR));
-		printk("Timer initcnt: %p\n",
-		       x2apic_read(X2APIC_TIMER_INITCNT));
-		printk("Timer div: %p\n", x2apic_read(X2APIC_TIMER_DIV));
-		printk("Timer LVT: %p\n", x2apic_read(X2APIC_LVT_TMR));
-	}
 }

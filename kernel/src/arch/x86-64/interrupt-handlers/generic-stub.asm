@@ -53,7 +53,7 @@ jmp isr_generic_stub
 
 align 16
 isr_vector_8_handler:
-push 0
+;push 0
 push 8
 jmp isr_generic_stub
 
@@ -65,13 +65,13 @@ jmp isr_generic_stub
 
 align 16
 isr_vector_10_handler:
-push 0
+;push 0
 push 10
 jmp isr_generic_stub
 
 align 16
 isr_vector_11_handler:
-push 0
+;push 0
 push 11
 jmp isr_generic_stub
 
@@ -107,7 +107,7 @@ jmp isr_generic_stub
 
 align 16
 isr_vector_17_handler:
-push 0
+;push 0
 push 17
 jmp isr_generic_stub
 
@@ -1555,22 +1555,24 @@ isr_generic_stub:
     push rcx
     push rbx
     push rax
+    push rbp
     mov rdi, rsp
     call isr_generic_handler
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rsi
-    pop rdi
-    pop rdx
-    pop rcx
-    pop rbx
+    pop rbp
     pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rdi
+    pop rsi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
 
     add rsp, 16
     iretq

@@ -8,7 +8,6 @@ cpu_wakeup:
     cpuid
     shr ebx, 24
 
-    ; Index into kernel boot context stacks and get from there
     mov rax, [boot_context_cr3]
     mov cr3, rax
     jmp new_cpu_wait

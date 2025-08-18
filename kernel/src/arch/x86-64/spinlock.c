@@ -12,8 +12,7 @@ void pushcli() {
 
 void popcli() {
 	struct cpu *curr_cpu = &cpu_cores[current_cpuid()];
-	curr_cpu->cli_count--;
-	if (!cli_count) {
+	if (!--curr_cpu->cli_count) {
 		__asm__ __volatile__("sti");
 	}
 }

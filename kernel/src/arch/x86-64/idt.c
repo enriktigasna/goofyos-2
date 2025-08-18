@@ -7,7 +7,8 @@ extern void *isr_vector_0_handler;
 struct idtr idt_register;
 __attribute__((aligned(0x10))) struct idt_entry idt_table[IDT_MAX_DESCRIPTORS];
 
-void __idt_set_entry(uint8_t idx, uint64_t handler, uint8_t flags) {
+void __idt_set_entry(uint8_t idx, uint64_t handler, uint8_t flags,
+		     uint8_t ist) {
 	struct idt_entry *entry = &idt_table[idx];
 
 	entry->isr_low = handler & 0xFFFF;
@@ -24,8 +25,13 @@ void init_idt() {
 	idt_register.base = (uint64_t)&idt_table;
 
 	set_idt(&idt_register);
-	for (int i = 0; i < 256; i++) {
+	for (int i = 0; i < 0x20; i++) {
 		__idt_set_entry(i, (uint64_t)(&isr_vector_0_handler) + i * 16,
-				0x8E);
+				0x8E, 1);
+	}
+
+	for (int i = 0x20; i < 256; i++) {
+		__idt_set_entry(i, (uint64_t)(&isr_vector_0_handler) + i * 16,
+				0x8E, 2);
 	}
 }

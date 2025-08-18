@@ -25,9 +25,11 @@ void kmain() {
 	init_idt();
 	mm_init();
 	cpu_init();
+	x2apic_init_timer();
 
 	printk("Welcome to GoofyOS\n");
 	popcli();
+
 	while (1)
 		;
 

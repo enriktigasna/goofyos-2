@@ -11,6 +11,7 @@ struct interrupt_frame {
 };
 
 struct interrupt_context {
+	uint64_t rbp;
 	uint64_t rax;
 	uint64_t rbx;
 	uint64_t rcx;

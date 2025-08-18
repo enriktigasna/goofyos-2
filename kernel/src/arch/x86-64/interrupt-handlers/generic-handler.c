@@ -5,8 +5,8 @@
 #include <goofy-os/scancode.h>
 
 void timer_handler(struct interrupt_context *ctx) {
-	// printk(".");
-	// pic_eoi(ctx->vector_number - 0x20);
+	// printk("%c", '0' + current_cpuid());
+	x2apic_eoi();
 	return;
 }
 
@@ -56,7 +56,7 @@ void isr_generic_handler(struct interrupt_context *ctx) {
 		break;
 	case 0x20:
 		// printk("%c", '0' + current_cpuid());
-		x2apic_eoi();
+		timer_handler(ctx);
 		break;
 	case 0x21:
 		// keyboard_handler(ctx);
