@@ -1,5 +1,6 @@
 global isr_vector_0_handler
 global isr_generic_stub
+global return_to_ctx
 
 extern isr_generic_handler
 
@@ -1581,4 +1582,5 @@ retpoline:
 
 return_to_ctx:
     mov rsp, rdi
+    mov cr3, rsi
     jmp retpoline

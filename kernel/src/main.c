@@ -28,10 +28,8 @@ void kmain() {
 	x2apic_init_timer();
 
 	printk("Welcome to GoofyOS\n");
-	popcli();
 
-	while (1)
-		;
+	go_to_task(&idle_task);
 
 	hcf();
 }

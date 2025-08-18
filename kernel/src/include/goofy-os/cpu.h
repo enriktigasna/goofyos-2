@@ -9,6 +9,8 @@
 #define GDT_OFFSET_USER_CODE 0x18
 #define GDT_OFFSET_USER_DATA 0x20
 
+#define KERNEL_CS 0x08
+
 #define MAX_CPUS 0x10
 #define MAX_IOAPICS 8
 #define KERNEL_STACK_SIZE 0x10000
@@ -129,6 +131,7 @@ inline void wrmsr(uint32_t msr, uint64_t val) {
 struct cpu {
 	size_t lapic_id;
 	size_t cli_count;
+	size_t preempt_count;
 	uint64_t hz;
 	struct task *current_task;
 	struct tss *tss;

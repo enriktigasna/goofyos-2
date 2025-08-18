@@ -1,6 +1,7 @@
 #include <goofy-os/boot.h>
 #include <goofy-os/cpu.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/sched.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -15,7 +16,5 @@ void new_cpu_wait() {
 
 	x2apic_init_timer();
 	tss_percpu_init();
-	popcli();
-	while (true)
-		;
+	go_to_task(&idle_task);
 }

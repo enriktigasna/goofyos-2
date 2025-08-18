@@ -3,6 +3,7 @@
 #include <goofy-os/cpu.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/sched.h>
 #include <goofy-os/slab.h>
 #include <goofy-os/time.h>
 #include <goofy-os/vmalloc.h>
@@ -85,5 +86,6 @@ void cpu_init() {
 	x2apic_init_timer();
 	tss_init();
 	tss_percpu_init();
+	sched_init();
 	smp_init();
 }

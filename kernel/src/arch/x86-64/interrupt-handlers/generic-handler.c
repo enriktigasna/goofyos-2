@@ -3,11 +3,13 @@
 #include <goofy-os/hcf.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/scancode.h>
+#include <goofy-os/sched.h>
 
 void timer_handler(struct registers *ctx) {
 	// printk("%c", '0' + current_cpuid());
 	x2apic_eoi();
-	return;
+	if (!cpu_cores[current_cpuid()].preempt_count)
+		schedule(ctx);
 }
 
 void keyboard_handler(struct registers *ctx) {
@@ -50,7 +52,7 @@ void dump_regs(struct registers *ctx) {
 void force_unlock_console() { fbcon.lock.locked = 0; }
 
 void isr_generic_handler(struct registers *ctx) {
-	pushcli();
+	__asm__ __volatile__("cli");
 	switch (ctx->vector_number) {
 	case 0x3:
 		break;
@@ -63,10 +65,10 @@ void isr_generic_handler(struct registers *ctx) {
 		break;
 	default:
 		force_unlock_console();
-		printk("Unrecognized interrupt! v=%x\n", ctx->vector_number);
+		printk("Unrecognized interrupt! v=%x c=%d\n",
+		       ctx->vector_number, current_cpuid());
 		dump_regs(ctx);
 		hcf();
 	}
-	popcli();
 	return;
 }

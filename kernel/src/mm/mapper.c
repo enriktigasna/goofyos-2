@@ -2,11 +2,22 @@
 #include <goofy-os/hcf.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/slab.h>
 #include <stdint.h>
 #include <string.h>
 
 uint64_t get_index(int level, void *addr) {
 	return (uint64_t)addr >> (12 + 9 * level) & 0x1ff;
+}
+
+struct page_table *new_page_table() {
+	uint64_t *pg = zpgalloc();
+	memcpy(pg, kernel_virtual_pt->cr3, 0x1000);
+
+	struct page_table *pt = kmalloc(sizeof(struct page_table));
+	pt->cr3 = pg;
+
+	return pt;
 }
 
 void map_page(struct page_table *pt, uint64_t phys, void *virt,

@@ -61,3 +61,4 @@ struct page {
 };
 
 extern struct page *sparsemap_array;
+struct page_table *new_page_table();

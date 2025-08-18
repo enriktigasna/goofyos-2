@@ -83,7 +83,8 @@
 		"registers.h": "c",
 		"uacpi.h": "c",
 		"tables.h": "c",
-		"time.h": "c"
+		"time.h": "c",
+		"sched.h": "c"
 	},
 	"C_Cpp.default.defines": [
 		"LIMINE_API_REVISION=3",
