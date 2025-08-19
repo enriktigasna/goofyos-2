@@ -35,7 +35,7 @@ struct kmem_cache {
 };
 
 struct slab {
-	struct kmem_cache *slab_jar;
+	struct kmem_cache *cache;
 
 	struct slab *next;
 	struct slab *prev;

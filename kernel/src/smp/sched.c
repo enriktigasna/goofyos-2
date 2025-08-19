@@ -1,8 +1,10 @@
 #include "string.h"
 #include <goofy-os/interrupts.h>
 #include <goofy-os/mm.h>
+#include <goofy-os/printk.h>
 #include <goofy-os/sched.h>
 #include <goofy-os/slab.h>
+#include <goofy-os/time.h>
 
 struct task idle_task;
 struct scheduler scheduler;

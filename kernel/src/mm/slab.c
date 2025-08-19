@@ -40,7 +40,7 @@ void slab_jar_bootstrap() {
 
 		tmp->flags |= SLAB_STATIC;
 		tmp->next = slab_jar.slab_empty;
-		tmp->slab_jar = &slab_jar;
+		tmp->cache = &slab_jar;
 
 		// TODO: Set struct slab in struct page
 		void *page = pgalloc();
@@ -138,7 +138,7 @@ void *_kmem_cache_alloc(struct kmem_cache *cache) {
 	}
 
 	struct_page->slab = new_slab;
-	new_slab->slab_jar = cache;
+	new_slab->cache = cache;
 
 	new_slab->next = cache->slab_partial;
 	if (new_slab->next)
@@ -169,7 +169,7 @@ static inline __attribute__((always_inline)) bool static_slab(struct slab *sl) {
 void _kfree(void *object) {
 	struct page *pg = __hhdm_to_page(object);
 	struct slab *slab = pg->slab;
-	struct kmem_cache *cache = slab->slab_jar;
+	struct kmem_cache *cache = slab->cache;
 
 	// Add to slab freelist
 	size_t max_objects = PAGE_SIZE / cache->size;
@@ -179,6 +179,10 @@ void _kfree(void *object) {
 	// If this is the last object in the slab we freed
 	if (++slab->free_objects == max_objects) {
 		// Pop it out from the d-linked list and put into free
+		if (slab->cache->slab_partial == slab) {
+			slab->cache->slab_partial = slab->next;
+		}
+
 		if (slab->prev) {
 			slab->prev->next = slab->next;
 		}
@@ -190,6 +194,7 @@ void _kfree(void *object) {
 		// Case where we destroy slab
 		if (cache->slab_empty > SLAB_MAX_EMPTY && !static_slab(slab)) {
 			_kfree(slab);
+			pg->slab = NULL;
 			pgfree((void *)((uint64_t)object & ~0xfff));
 			return;
 		}
