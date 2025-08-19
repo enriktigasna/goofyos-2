@@ -17,6 +17,8 @@
  * 3. Initialize memory manager
  */
 
+void ktimer_task(uint64_t id) { printk("Hello from timer thread %d!\n", id); }
+
 void kmain() {
 	limine_init();
 	console_init(__limine_framebuffer);
@@ -29,7 +31,17 @@ void kmain() {
 
 	printk("Welcome to GoofyOS\n");
 
-	go_to_task(&idle_task);
+	for (int i = 0; i < 20; i++) {
+		char *task = kzalloc(64);
+		struct ktimer *ktimer = kzalloc(sizeof(struct ktimer));
+		ktimer->func = (kthread_func_t)ktimer_task;
+		ktimer->arg = i;
+		ktimer->us_delay = 2000000;
+		sched_task(init_ktimer(ktimer));
+	};
 
-	hcf();
+	while (1)
+		__asm__ __volatile__("pause");
+
+	// go_to_task(&idle_task);
 }

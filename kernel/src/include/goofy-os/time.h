@@ -16,3 +16,4 @@ extern struct hpet global_hpet;
 uint64_t hpet_counter();
 void hpet_init();
 void hpet_wait_us(uint64_t us);
+void hpet_wait_us_yield(uint64_t us);

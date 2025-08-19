@@ -44,6 +44,8 @@ void dump_regs(struct registers *ctx) {
 	printk("r13: %p\n", ctx->r13);
 	printk("r14: %p\n", ctx->r14);
 	printk("r15: %p\n", ctx->r15);
+	printk("rsp: %p\n", ctx->rsp);
+	printk("rbp: %p\n", ctx->rbp);
 
 	printk("rip: %p\n", ctx->rip);
 	return;

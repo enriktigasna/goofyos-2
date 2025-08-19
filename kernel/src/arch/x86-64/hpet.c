@@ -29,6 +29,15 @@ void hpet_wait_us(uint64_t us) {
 	}
 }
 
+void hpet_wait_us_yield(uint64_t us) {
+	uint64_t cur = hpet_counter();
+	uint64_t target = cur + (us * FEMTOSECONDS_PER_US) / global_hpet.period;
+
+	while (hpet_counter() < target) {
+		__asm__ __volatile__("int $32");
+	}
+}
+
 void hpet_init() {
 	uint64_t period = hpet_read(HPET_GEENRAL_CAPABILITIES) >> 32;
 	printk("Period is %p\n", period);

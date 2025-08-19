@@ -2,9 +2,9 @@
 #include <goofy-os/interrupts.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
-#include <goofy-os/sched.h>
 #include <goofy-os/slab.h>
 #include <goofy-os/time.h>
+#include <goofy-os/vmalloc.h>
 
 struct task idle_task;
 struct scheduler scheduler;
@@ -24,20 +24,25 @@ void go_to_task(struct task *task) {
 	return_to_ctx(task->regs, (uint64_t)task->pt->cr3 - hhdm_offset);
 }
 
-void sched_task(struct task *task) {
-	if (task == &idle_task) {
+void _sched_task(struct task *task) {
+	if (task == &idle_task || !task) {
 		return;
 	}
 
 	task->next = scheduler.head;
+	task->prev = NULL;
 	scheduler.head = task;
 
 	if (task->next)
 		task->next->prev = task;
 	else
 		scheduler.tail = task;
+}
 
-	task->prev = NULL;
+void sched_task(struct task *task) {
+	acquire(&scheduler.lock);
+	_sched_task(task);
+	release(&scheduler.lock);
 }
 
 struct task *pop_task() {
@@ -47,10 +52,12 @@ struct task *pop_task() {
 	}
 
 	scheduler.tail = ret->prev;
-	scheduler.tail->next = NULL;
+	if (scheduler.tail)
+		scheduler.tail->next = NULL;
 
 	ret->prev = NULL;
 	ret->next = NULL;
+	return ret;
 }
 
 void save_task(struct registers *regs) {
@@ -64,7 +71,7 @@ void save_task(struct registers *regs) {
 void schedule(struct registers *regs) {
 	acquire(&scheduler.lock);
 	save_task(regs);
-	sched_task(cpu_cores[current_cpuid()].current_task);
+	_sched_task(cpu_cores[current_cpuid()].current_task);
 	struct task *target = pop_task();
 	release(&scheduler.lock);
 	go_to_task(target);
