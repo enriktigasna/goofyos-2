@@ -21,11 +21,11 @@ void ktimer_task(uint64_t id) { printk("Hello from timer thread %d!\n", id); }
 
 void kmain() {
 	limine_init();
-	console_init(__limine_framebuffer);
+	mm_init();
+	console_init(__limine_framebuffer, vzalloc(FRAMEBUFFER_SIZE));
 
 	init_gdt();
 	init_idt();
-	mm_init();
 	cpu_init();
 	x2apic_init_timer();
 

@@ -140,7 +140,8 @@ int printk(const char *fmt, ...) {
 	printed = _vsprintf(printf_buf, fmt, args);
 	va_end(args);
 
-	console_write(printf_buf);
+	if (fbcon.enabled)
+		console_write(printf_buf);
 
 	return printed;
 }
