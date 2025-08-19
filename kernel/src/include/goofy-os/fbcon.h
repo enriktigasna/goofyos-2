@@ -26,3 +26,5 @@ extern uint8_t vga_font[];
 extern struct fbconsole fbcon;
 void console_init(struct limine_framebuffer *framebuffer, void *buffer);
 void console_write(char *str);
+void serial_init();
+void serial_write();

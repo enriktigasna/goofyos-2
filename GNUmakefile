@@ -3,7 +3,7 @@ MAKEFLAGS += -rR
 .SUFFIXES:
 
 # Default user QEMU flags. These are appended to the QEMU command calls.
-QEMUFLAGS := -m 2G
+QEMUFLAGS := -m 2G -monitor stdio -debugcon file:/dev/stdout -serial file:/dev/stdout
 
 override IMAGE_NAME := template
 

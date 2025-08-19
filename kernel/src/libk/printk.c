@@ -143,6 +143,9 @@ int printk(const char *fmt, ...) {
 	if (fbcon.enabled)
 		console_write(printf_buf);
 
+	for (int i = 0; printf_buf[i]; i++)
+		serial_write(printf_buf[i]);
+
 	return printed;
 }
 
