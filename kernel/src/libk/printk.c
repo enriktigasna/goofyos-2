@@ -1,6 +1,9 @@
 #include <goofy-os/fbcon.h>
+#include <goofy-os/spinlock.h>
 #include <stdarg.h>
 #include <stdbool.h>
+
+struct spinlock printk_lock;
 
 void reverse(char str[], int length) {
 	int start = 0;
@@ -140,11 +143,13 @@ int printk(const char *fmt, ...) {
 	printed = _vsprintf(printf_buf, fmt, args);
 	va_end(args);
 
+	acquire(&printk_lock);
 	if (fbcon.enabled)
 		console_write(printf_buf);
 
 	for (int i = 0; printf_buf[i]; i++)
 		serial_write(printf_buf[i]);
+	release(&printk_lock);
 
 	return printed;
 }

@@ -3,7 +3,7 @@ MAKEFLAGS += -rR
 .SUFFIXES:
 
 # Default user QEMU flags. These are appended to the QEMU command calls.
-QEMUFLAGS := -m 2G -monitor stdio -debugcon file:/dev/stdout -serial file:/dev/stdout
+QEMUFLAGS := -m 2G -serial file:/dev/stdout
 
 override IMAGE_NAME := template
 
@@ -29,6 +29,17 @@ run: $(IMAGE_NAME).iso
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \
 		$(QEMUFLAGS)
+
+.PHONY: run
+run-terminal: $(IMAGE_NAME).iso
+	qemu-system-x86_64 \
+		-M q35 \
+    -cpu qemu64,x2apic=on \
+		-smp 4 \
+		-cdrom $(IMAGE_NAME).iso \
+		-boot d \
+		$(QEMUFLAGS) \
+		-nographic
 
 .PHONY: run
 run-kvm: $(IMAGE_NAME).iso

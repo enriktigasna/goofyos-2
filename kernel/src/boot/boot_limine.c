@@ -54,6 +54,8 @@ struct limine_hhdm_response* __limine_hhdm_response;
 struct limine_mp_response* __limine_mp_response;
 struct limine_rsdp_response* __limine_rsdp_response;
 
+
+bool NO_FRAMEBUFFER;
 void limine_init() {
         if (LIMINE_BASE_REVISION_SUPPORTED == false) {
                 hcf();
@@ -61,11 +63,11 @@ void limine_init() {
 
         // Ensure we got a framebuffer.
         if (framebuffer_request.response == NULL) {
-                hcf();
+                NO_FRAMEBUFFER = true;
         }
 
         if (framebuffer_request.response->framebuffer_count < 1) {
-                hcf();
+                NO_FRAMEBUFFER = true;
         }
         
 	// Ensure we got memmap
@@ -85,7 +87,9 @@ void limine_init() {
                 hcf();
         }
 
+	if (!NO_FRAMEBUFFER)
         __limine_framebuffer = framebuffer_request.response->framebuffers[0];
+
 	__limine_memmap_response = memmap_request.response;
 	__limine_hhdm_response = hhdm_request.response;
 	__limine_mp_response = mp_request.response;

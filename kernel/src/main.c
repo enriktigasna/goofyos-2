@@ -23,7 +23,7 @@ void kmain() {
 	limine_init();
 	serial_init();
 	mm_init();
-	console_init(__limine_framebuffer, vzalloc(FRAMEBUFFER_SIZE));
+	console_init(__limine_framebuffer);
 
 	init_gdt();
 	init_idt();
