@@ -8,4 +8,6 @@ extern struct limine_memmap_response *__limine_memmap_response;
 extern struct limine_hhdm_response *__limine_hhdm_response;
 extern struct limine_mp_response *__limine_mp_response;
 extern struct limine_rsdp_response *__limine_rsdp_response;
+extern struct limine_module_response *__limine_module_response;
+extern struct limine_executable_cmdline_response *__limine_cmdline_response;
 extern bool NO_FRAMEBUFFER;

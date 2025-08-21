@@ -41,6 +41,18 @@ static volatile struct limine_rsdp_request rsdp_request = {
 	.revision = 0,
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_module_request module_request = {
+    	.id = LIMINE_MODULE_REQUEST,
+	.revision = 0,
+};
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_executable_cmdline_request cmdline_request = {
+    	.id = LIMINE_EXECUTABLE_CMDLINE_REQUEST,
+	.revision = 0,
+};
+
 __attribute__((used, section(".limine_requests_start")))
 static volatile LIMINE_REQUESTS_START_MARKER;
 
@@ -53,6 +65,8 @@ struct limine_memmap_response* __limine_memmap_response;
 struct limine_hhdm_response* __limine_hhdm_response;
 struct limine_mp_response* __limine_mp_response;
 struct limine_rsdp_response* __limine_rsdp_response;
+struct limine_module_response* __limine_module_response;
+struct limine_executable_cmdline_response* __limine_cmdline_response;
 
 
 bool NO_FRAMEBUFFER;
@@ -94,6 +108,10 @@ void limine_init() {
 	__limine_hhdm_response = hhdm_request.response;
 	__limine_mp_response = mp_request.response;
 	__limine_rsdp_response = rsdp_request.response;
+	__limine_module_response = module_request.response;
+	__limine_cmdline_response = cmdline_request.response;
+
+
 	hhdm_offset = __limine_hhdm_response->offset;
 
 	n_cpus = mp_request.response->cpu_count;

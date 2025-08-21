@@ -35,15 +35,7 @@ void kmain() {
 	cpu_init();
 	x2apic_init_timer();
 	printk("Welcome to GoofyOS\n");
-
-	for (int i = 0; i < 20; i++) {
-		char *task = kzalloc(64);
-		struct ktimer *ktimer = kzalloc(sizeof(struct ktimer));
-		ktimer->func = (kthread_func_t)ktimer_task;
-		ktimer->arg = i;
-		ktimer->us_delay = 1000000;
-		sched_task(init_ktimer(ktimer));
-	};
+	printk("Cmdline %s\n", __limine_cmdline_response->cmdline);
 
 	schedule_bsp();
 }
