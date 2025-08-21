@@ -51,3 +51,10 @@ int memcmp(char *str1, char *str2, int n) {
 	}
 	return 0;
 }
+
+int strlen(char *str) {
+	int i;
+	for (i = 0; str[i]; i++)
+		;
+	return i;
+}

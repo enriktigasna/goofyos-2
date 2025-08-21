@@ -19,6 +19,11 @@
 
 void ktimer_task(uint64_t id) { printk("Hello from timer thread %d!\n", id); }
 
+void schedule_bsp() {
+	cpu_cores[0].cli_count == 0;
+	go_to_task(&idle_task);
+}
+
 void kmain() {
 	limine_init();
 	serial_init();
@@ -29,20 +34,18 @@ void kmain() {
 	init_idt();
 	cpu_init();
 	x2apic_init_timer();
-
 	printk("Welcome to GoofyOS\n");
 
+	/*
 	for (int i = 0; i < 20; i++) {
 		char *task = kzalloc(64);
 		struct ktimer *ktimer = kzalloc(sizeof(struct ktimer));
 		ktimer->func = (kthread_func_t)ktimer_task;
 		ktimer->arg = i;
-		ktimer->us_delay = 2000000;
+		ktimer->us_delay = 500000;
 		sched_task(init_ktimer(ktimer));
 	};
+	*/
 
-	while (1)
-		__asm__ __volatile__("pause");
-
-	// go_to_task(&idle_task);
+	schedule_bsp();
 }

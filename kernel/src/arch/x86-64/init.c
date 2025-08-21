@@ -21,7 +21,6 @@ void smp_init() {
 void detect_x2apic() {
 	uint64_t val;
 	rdmsr(0x802, &val);
-	printk("IA32_APIC_BASE %p\n", val);
 }
 
 void set_tss_desc(struct tss_desc *desc, struct tss *task_seg) {
