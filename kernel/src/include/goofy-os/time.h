@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 
 static inline uint64_t rdtsc(void) {
@@ -10,10 +11,12 @@ static inline uint64_t rdtsc(void) {
 struct hpet {
 	void *base;
 	uint64_t period;
+	bool initialized;
 };
 
 extern struct hpet global_hpet;
 uint64_t hpet_counter();
+uint64_t hpet_us_since_boot();
 void hpet_init();
 void hpet_wait_us(uint64_t us);
 void hpet_wait_us_yield(uint64_t us);

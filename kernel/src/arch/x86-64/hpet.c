@@ -1,5 +1,6 @@
 #include <goofy-os/printk.h>
 #include <goofy-os/time.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 struct hpet global_hpet;
@@ -19,6 +20,15 @@ void hpet_write(uint32_t reg, uint64_t val) {
 }
 
 inline uint64_t hpet_counter() { return hpet_read(HPET_MAIN_COUNTER); }
+
+uint64_t hpet_us_since_boot() {
+	// return hpet_read(HPET_MAIN_COUNTER);
+	if (global_hpet.initialized)
+		return (hpet_read(HPET_MAIN_COUNTER) * global_hpet.period) /
+		       1000000000;
+
+	return 0;
+}
 
 void hpet_wait_us(uint64_t us) {
 	uint64_t cur = hpet_counter();
@@ -46,4 +56,5 @@ void hpet_init() {
 	hpet_write(HPET_GENERAL_CONFIGURATION, 0);
 	hpet_write(HPET_MAIN_COUNTER, 0);
 	hpet_write(HPET_GENERAL_CONFIGURATION, 1);
+	global_hpet.initialized = true;
 }

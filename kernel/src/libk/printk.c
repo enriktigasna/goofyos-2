@@ -1,5 +1,6 @@
 #include <goofy-os/fbcon.h>
 #include <goofy-os/spinlock.h>
+#include <goofy-os/time.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
@@ -102,16 +103,13 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 	char numbuf[16];
 	int len;
 	int width;
-	int multip;
 
 	for (str = buf; *fmt; ++fmt) {
 		if (*fmt != '%') {
 			*str++ = *fmt;
 			continue;
 		}
-
 		++fmt;
-
 		fmt += parse_width(fmt, &width);
 
 		switch (*fmt) {
@@ -135,6 +133,7 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 			continue;
 		case 'd':
 			itoa(va_arg(args, int32_t), numbuf, 10, 0);
+
 			for (int i = 0; i < width - strlen(numbuf); i++) {
 				*str++ = ' ';
 			}
@@ -145,6 +144,7 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 			continue;
 		case 'x':
 			itoa(va_arg(args, int32_t), numbuf, 16, 0);
+
 			for (int i = 0; i < width - strlen(numbuf); i++) {
 				*str++ = ' ';
 			}
@@ -183,13 +183,27 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 	return (str - buf);
 }
 
-int printk(const char *fmt, ...) {
-	char printf_buf[1024];
+int sprintf(char *buf, const char *fmt, ...) {
 	va_list args;
 	int printed;
 
 	va_start(args, fmt);
-	printed = _vsprintf(printf_buf, fmt, args);
+	printed = _vsprintf(buf, fmt, args);
+	va_end(args);
+	return printed;
+}
+
+int printk(const char *fmt, ...) {
+	char printf_buf[1024];
+
+	va_list args;
+	int printed;
+	uint64_t time_since_boot = hpet_us_since_boot();
+	sprintf(printf_buf, "[%5d.%7d] ", hpet_us_since_boot() / 1000000,
+		hpet_us_since_boot() % 1000000);
+
+	va_start(args, fmt);
+	printed = _vsprintf(printf_buf + strlen(printf_buf), fmt, args);
 	va_end(args);
 
 	acquire(&printk_lock);
@@ -200,15 +214,5 @@ int printk(const char *fmt, ...) {
 		serial_write(printf_buf[i]);
 	release(&printk_lock);
 
-	return printed;
-}
-
-int sprintf(char *buf, const char *fmt, ...) {
-	va_list args;
-	int printed;
-
-	va_start(args, fmt);
-	printed = _vsprintf(buf, fmt, args);
-	va_end(args);
 	return printed;
 }

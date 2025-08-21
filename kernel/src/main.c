@@ -36,16 +36,14 @@ void kmain() {
 	x2apic_init_timer();
 	printk("Welcome to GoofyOS\n");
 
-	/*
 	for (int i = 0; i < 20; i++) {
 		char *task = kzalloc(64);
 		struct ktimer *ktimer = kzalloc(sizeof(struct ktimer));
 		ktimer->func = (kthread_func_t)ktimer_task;
 		ktimer->arg = i;
-		ktimer->us_delay = 500000;
+		ktimer->us_delay = 1000000;
 		sched_task(init_ktimer(ktimer));
 	};
-	*/
 
 	schedule_bsp();
 }
