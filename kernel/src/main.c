@@ -1,4 +1,5 @@
 #include <goofy-os/boot.h>
+#include <goofy-os/cmdline.h>
 #include <goofy-os/cpu.h>
 #include <goofy-os/fbcon.h>
 #include <goofy-os/hcf.h>
@@ -29,13 +30,16 @@ void kmain() {
 	serial_init();
 	mm_init();
 	console_init(__limine_framebuffer);
+	parse_cmdline();
+	printk("Commands: \n");
+
+	printk("Looking for Hello:\n");
 
 	init_gdt();
 	init_idt();
 	cpu_init();
 	x2apic_init_timer();
 	printk("Welcome to GoofyOS\n");
-	printk("Cmdline %s\n", __limine_cmdline_response->cmdline);
 
 	schedule_bsp();
 }

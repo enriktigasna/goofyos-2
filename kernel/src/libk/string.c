@@ -32,8 +32,11 @@ void *memmove(void *dstptr, const void *srcptr, size_t size) {
 
 int strncmp(char *str1, char *str2, int n) {
 	for (int i = 0; i < n; i++) {
-		if (str1[i] != str2[i])
-			return i;
+		if (str1[i] > str2[i])
+			return 1;
+
+		if (str1[i] < str2[i])
+			return -1;
 
 		if (!str1[i]) {
 			return 0;
@@ -57,4 +60,11 @@ int strlen(char *str) {
 	for (i = 0; str[i]; i++)
 		;
 	return i;
+}
+
+int strcpy(char *str1, char *str2) {
+	int len = strlen(str2);
+	memcpy(str1, str2, len);
+	str1[len] = '\0';
+	return len;
 }
