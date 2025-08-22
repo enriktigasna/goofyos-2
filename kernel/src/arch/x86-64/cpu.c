@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-size_t n_cpus;
+int n_cpus;
 struct cpu cpu_cores[MAX_CPUS];
 
 void new_cpu_wait() {

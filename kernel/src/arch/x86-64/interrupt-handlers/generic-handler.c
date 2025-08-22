@@ -12,23 +12,6 @@ void timer_handler(struct registers *ctx) {
 		schedule(ctx);
 }
 
-void keyboard_handler(struct registers *ctx) {
-	uint8_t scancode = inb(0x60);
-	if (scancode & 0x80) {
-		// pic_eoi(ctx->vector_number - 0x20);
-		return;
-	}
-
-	uint8_t ascii_translation = kbd_US[scancode];
-
-	// Release
-	if (ascii_translation) {
-		printk("%c", ascii_translation);
-	}
-	// pic_eoi(ctx->vector_number - 0x20);
-	return;
-}
-
 void dump_regs(struct registers *ctx) {
 	printk("rax: %p\n", ctx->rax);
 	printk("rbx: %p\n", ctx->rbx);
@@ -61,9 +44,6 @@ void isr_generic_handler(struct registers *ctx) {
 	case 0x20:
 		// printk("%c", '0' + current_cpuid());
 		timer_handler(ctx);
-		break;
-	case 0x21:
-		// keyboard_handler(ctx);
 		break;
 	default:
 		force_unlock_console();

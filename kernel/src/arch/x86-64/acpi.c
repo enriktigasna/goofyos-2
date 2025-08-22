@@ -21,9 +21,9 @@ void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len) {
 	return vmap_contiguous(addr, len);
 }
 
-void uacpi_kernel_unmap(void *addr, uacpi_size len) { vunmap_contiguous(addr); }
+void uacpi_kernel_unmap(void *addr, uacpi_size) { vunmap_contiguous(addr); }
 
-void uacpi_kernel_log(uacpi_log_level level, const uacpi_char *msg) {
+void uacpi_kernel_log(uacpi_log_level, const uacpi_char *msg) {
 	printk("[UACPI] %s", msg);
 }
 

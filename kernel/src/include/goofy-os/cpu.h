@@ -103,7 +103,7 @@ void set_idt(struct idtr *idt_register);
 
 #define IDT_MAX_DESCRIPTORS 256
 
-typedef void (*interrupt_handler_t)(struct interrupt_frame *frame);
+typedef void (*interrupt_handler_t)(struct registers *frame);
 extern interrupt_handler_t interrupt_table[IDT_MAX_DESCRIPTORS];
 
 inline void outb(uint16_t port, uint8_t val) {
@@ -141,7 +141,7 @@ struct ioapic {
 	void *base;
 };
 
-extern size_t n_cpus;
+extern int n_cpus;
 extern struct cpu cpu_cores[MAX_CPUS];
 extern struct ioapic ioapics[MAX_IOAPICS];
 
@@ -154,7 +154,7 @@ void pushcli();
 void popcli();
 
 void ioapic_write(struct ioapic *ioapic, uint8_t offset, uint32_t val);
-uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset, uint32_t val);
+uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset);
 
 extern void **kernel_stacks;
 void cpu_wakeup();

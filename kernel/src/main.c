@@ -21,7 +21,7 @@
 void ktimer_task(uint64_t id) { printk("Hello from timer thread %d!\n", id); }
 
 void schedule_bsp() {
-	cpu_cores[0].cli_count == 0;
+	cpu_cores[0].cli_count = 0;
 	go_to_task(&idle_task);
 }
 

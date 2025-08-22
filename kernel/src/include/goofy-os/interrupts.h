@@ -41,5 +41,5 @@ struct registers {
 	uint64_t ss;
 } __attribute__((packed));
 
-void isr_generic_stub(struct interrupt_frame *frame);
+void isr_generic_stub(struct registers *frame);
 void isr_generic_handler(struct registers *ctx);
