@@ -79,7 +79,7 @@ void console_flush() {
 	fbcon.queue_items = 0;
 }
 
-void queue_push(struct fbconsole_queue_item todo) {
+static void queue_push(struct fbconsole_queue_item todo) {
 	uint16_t *target =
 	    &fbcon.term_buffer[todo.y * fbcon.width_char + todo.x];
 
