@@ -14,13 +14,13 @@ struct dnode {
  *
  * Locks not provided. To be locked by consumer.
  */
-struct deque {
+struct dlist {
 	size_t count;
 	struct dnode *head;
 	struct dnode *tail;
 };
 
-void deque_front_push(struct deque *stack, void *value);
-struct dnode *deque_front_pop(struct deque *stack);
-void deque_back_push(struct deque *queue, void *value);
-struct dnode *deque_back_pop(struct deque *queue);
+void deque_front_push(struct dlist *stack, void *value);
+struct dnode *deque_front_pop(struct dlist *stack);
+void deque_back_push(struct dlist *queue, void *value);
+struct dnode *deque_back_pop(struct dlist *queue);
