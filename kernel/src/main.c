@@ -7,6 +7,7 @@
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
 #include <goofy-os/time.h>
+#include <goofy-os/vfs.h>
 #include <goofy-os/vmalloc.h>
 #include <limine.h>
 #include <stddef.h>
@@ -35,6 +36,7 @@ void kmain() {
 	init_idt();
 	cpu_init();
 	x2apic_init_timer();
+	vfs_init();
 
 	printk("Welcome to GoofyOS\n");
 	if (cmdline_contains("initrd")) {

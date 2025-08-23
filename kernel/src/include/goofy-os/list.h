@@ -20,7 +20,7 @@ struct dlist {
 	struct dnode *tail;
 };
 
-void deque_front_push(struct dlist *stack, void *value);
-struct dnode *deque_front_pop(struct dlist *stack);
-void deque_back_push(struct dlist *queue, void *value);
-struct dnode *deque_back_pop(struct dlist *queue);
+void dlist_front_push(struct dlist *stack, void *value);
+struct dnode *dlist_front_pop(struct dlist *stack);
+void dlist_back_push(struct dlist *queue, void *value);
+struct dnode *dlist_back_pop(struct dlist *queue);

@@ -1,6 +1,12 @@
 #include <goofy-os/list.h>
 #include <stdbool.h>
 
+#define VFS_PATH_MAX 256
+
+#define MODE_DIRECTORY 01000
+
+extern struct dlist mountpoints;
+
 struct vnode_operations {
 	int (*open)(struct vnode *node, char *buf, int n);
 	int (*read)(struct vnode *node, char *buf, int n);
@@ -11,6 +17,7 @@ struct vnode_operations {
 	int (*mkdir)(struct vnode *node, char *name);
 	int (*create)(struct vnode *node, char *name);
 	int (*delete)(struct vnode *node, char *buf, int n);
+	int (*rename)(struct vnode *node, char *buf, int n);
 	int (*free)(struct vnode *node);
 	struct vfs *fs;
 };
@@ -28,10 +35,24 @@ struct vnode {
 	void *private_data;
 	struct dlist *fds;
 	int refcount;
+	enum vnode_type type;
 	bool inuse;
+};
+
+struct mountpoint {
+	char *name;
+	struct vfs *fs;
+	struct mountpoint *next;
 };
 
 struct vfs {
 	struct vnode *vfs_root;
 	void *private_data;
 };
+
+struct file {
+	struct vnode *node;
+	int flags;
+};
+
+void vfs_init();

@@ -1,3 +1,4 @@
+#include <goofy-os/slab.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -67,4 +68,10 @@ int strcpy(char *str1, char *str2) {
 	memcpy(str1, str2, len);
 	str1[len] = '\0';
 	return len;
+}
+
+char *strdup(char *str) {
+	char *new = kmalloc(strlen(str));
+	strcpy(new, str);
+	return new;
 }
