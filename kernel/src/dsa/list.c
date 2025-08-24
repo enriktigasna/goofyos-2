@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void deque_front_push(struct dlist *stack, void *value) {
+void dlist_front_push(struct dlist *stack, void *value) {
 	struct dnode *new = kzalloc(sizeof(struct dnode));
 	new->value = value;
 	new->next = stack->head;
@@ -15,7 +15,7 @@ void deque_front_push(struct dlist *stack, void *value) {
 	stack->count++;
 }
 
-struct dnode *deque_front_pop(struct dlist *stack) {
+struct dnode *dlist_front_pop(struct dlist *stack) {
 	struct dnode *ret = stack->head;
 	if (ret->next)
 		ret->next->prev = NULL;
@@ -26,7 +26,7 @@ struct dnode *deque_front_pop(struct dlist *stack) {
 	stack->count--;
 }
 
-void deque_back_push(struct dlist *queue, void *value) {
+void dlist_back_push(struct dlist *queue, void *value) {
 	struct dnode *new = kzalloc(sizeof(struct dnode));
 	new->value = value;
 	new->prev = queue->tail;
@@ -38,7 +38,7 @@ void deque_back_push(struct dlist *queue, void *value) {
 	queue->count++;
 }
 
-struct dnode *deque_back_pop(struct dlist *queue) {
+struct dnode *dlist_back_pop(struct dlist *queue) {
 	struct dnode *ret = queue->tail;
 	if (ret->prev)
 		ret->prev->next = NULL;
@@ -49,5 +49,5 @@ struct dnode *deque_back_pop(struct dlist *queue) {
 	queue->count--;
 }
 
-// TODO: void deque_remove_item(struct dlist* deque, struct dnode* item)
-// TODO: int deque_remove_value(struct dlist* deque, void* value)
+// TODO: void dlist_remove_item(struct dlist* deque, struct dnode* item)
+// TODO: int dlist_remove_value(struct dlist* deque, void* value)
