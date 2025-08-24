@@ -8,22 +8,19 @@
  * GoofyOS VFS
  *
  * The VFS does not have mountpoints, it is instead a tree of dirent caches. All
- * mountpoints are guaranteed to be found by just walking this tree.
+ * mountpoints are guaranteed to be found by just walking this tree. This is so
+ * that you won't try to create a node through doing a lookup in wrong fs, and
+ * messing up state.
  *
  * If a dentry cache doesn't have an entry you are looking for,
  * you go into it's backing vnode, and do lookup.
  *
- * Getdirents doesn't return
- * a bunch of dirents, intead it fill the dirent cache children with new
- * dirents, also incrementing all refcounts by one.
- *
- * After a getdirent call you can extract all the data from the children, then
- * put all new dirents.
- *
+ * When removing, it creates a negative dentry, so that when all
+ * references close, it will call vnode->remove
  *
  */
 
-struct mountpoint mount_list;
+struct dentry *rootfs;
 
 extern int tmpfs_mount(struct dentry *dentry, struct vfs *vfs);
 
@@ -49,15 +46,14 @@ void vfs_init() {
 	// Init tmpfs to root and add it to mountpoints
 	struct vnode *node = kzalloc(sizeof(struct vnode));
 	struct vfs *vfs = kzalloc(sizeof(struct vfs));
-	node->type = V_DIRECTORY;
+	node->mode = S_IFDIR | 0777;
 	node->curr_vfs = vfs;
 
 	struct dentry *root_dentry = kzalloc(sizeof(struct dentry));
 	root_dentry->name = strdup("/");
 	root_dentry->vnode = node;
 	root_dentry->refcount = 1;
-	mount_list.mount_dentry = root_dentry;
-	mount_list.fs = vfs;
+	rootfs = root_dentry;
 
 	vfs->root_dentry = root_dentry;
 	tmpfs_mount(root_dentry, vfs);

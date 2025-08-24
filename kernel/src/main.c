@@ -7,6 +7,7 @@
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
 #include <goofy-os/time.h>
+#include <goofy-os/uapi/stat.h>
 #include <goofy-os/vfs.h>
 #include <goofy-os/vmalloc.h>
 #include <limine.h>
@@ -26,6 +27,15 @@ void schedule_bsp() {
 	go_to_task(&idle_task);
 }
 
+void print_dirents(struct vnode *node) {
+	struct dlist list;
+	int res = node->ops->getdirents(node, &list);
+	printk("Responeded with %d\n", res);
+	for (struct dnode *curr = list.head; curr; curr = curr->next) {
+		printk("%s\n", ((struct dirent *)curr->value)->name);
+	}
+}
+
 void kmain() {
 	limine_init();
 	serial_init();
@@ -39,6 +49,7 @@ void kmain() {
 	vfs_init();
 
 	printk("Welcome to GoofyOS\n");
+
 	if (cmdline_contains("initrd")) {
 		// Do initrd mount
 	}

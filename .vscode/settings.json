@@ -86,7 +86,9 @@
 		"time.h": "c",
 		"sched.h": "c",
 		"list.h": "c",
-		"vfs.h": "c"
+		"vfs.h": "c",
+		"errno.h": "c",
+		"stat.h": "c"
 	},
 	"C_Cpp.default.defines": [
 		"LIMINE_API_REVISION=3",

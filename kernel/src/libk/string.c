@@ -46,6 +46,15 @@ int strncmp(char *str1, char *str2, int n) {
 	return 0;
 }
 
+int strlen(char *str) {
+	int i;
+	for (i = 0; str[i]; i++)
+		;
+	return i;
+}
+
+int strcmp(char *str1, char *str2) { return strncmp(str1, str2, strlen(str1)); }
+
 int memcmp(char *str1, char *str2, int n) {
 	for (int i = 0; i < n; i++) {
 		if (str1[i] < str2[i])
@@ -54,13 +63,6 @@ int memcmp(char *str1, char *str2, int n) {
 			return 1;
 	}
 	return 0;
-}
-
-int strlen(char *str) {
-	int i;
-	for (i = 0; str[i]; i++)
-		;
-	return i;
 }
 
 int strcpy(char *str1, char *str2) {

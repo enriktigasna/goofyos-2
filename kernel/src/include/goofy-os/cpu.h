@@ -169,5 +169,5 @@ void pit_program_mode2(uint16_t div);
 uint16_t pit_read_counter(void);
 void tss_percpu_init();
 
-atomic_inc(void *target);
-atomic_dec(void *target);
+void atomic_inc(void *target);
+void atomic_dec(void *target);
