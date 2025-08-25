@@ -1,18 +1,27 @@
 #include <goofy-os/list.h>
+#include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
 #include <goofy-os/uapi/errno.h>
 #include <goofy-os/uapi/stat.h>
 #include <goofy-os/vfs.h>
+#include <goofy-os/vmalloc.h>
 #include <string.h>
+
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 int tmpfs_create(struct vnode *node, char *name, short flags);
 int tmpfs_mkdir(struct vnode *node, char *name, short flags);
 int tmpfs_getdirents(struct vnode *node, struct dlist *list);
+int tmpfs_write(struct vnode *node, char *buf, long n, long off);
+int tmpfs_read(struct vnode *node, char *buf, long n, long off);
 struct vnode_operations tmpfs_operations = {
     .create = tmpfs_create,
     .mkdir = tmpfs_mkdir,
     .getdirents = tmpfs_getdirents,
+    .write = tmpfs_write,
+    .read = tmpfs_read,
 };
 
 struct tmpfs_inode {
@@ -20,6 +29,7 @@ struct tmpfs_inode {
 	struct dlist *children;
 	char *data;
 	long length;
+	long effective_length;
 	short mode;
 };
 
@@ -71,6 +81,48 @@ int tmpfs_mkdir(struct vnode *node, char *name, short flags) {
 	new->name = strdup(name);
 	new->mode = (flags & ~S_IFMT) | S_IFDIR;
 	dlist_back_push(tmpfs_node->children, new);
+}
+
+int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
+	if (S_ISDIR(node->mode)) {
+		return -EISDIR;
+	}
+
+	if (n == 0) {
+		return 0;
+	}
+
+	struct tmpfs_inode *tnode = node->private_data;
+	long target_length = MAX(n + off, tnode->length);
+	if (target_length > tnode->effective_length) {
+		// Reallocate file buffer to fit inside size
+		long new_effective_length =
+		    (target_length + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+		char *new_buf = vzalloc(new_effective_length);
+		memcpy(new_buf, tnode->data, tnode->length);
+		if (tnode->data)
+			vfree(tnode->data);
+		tnode->data = new_buf;
+		tnode->effective_length = new_effective_length;
+	}
+	tnode->length = target_length;
+	memcpy(tnode->data + off, buf, n);
+	return n;
+}
+
+int tmpfs_read(struct vnode *node, char *buf, long n, long off) {
+	if (S_ISDIR(node->mode)) {
+		return -EISDIR;
+	}
+
+	if (n == 0) {
+		return 0;
+	}
+
+	struct tmpfs_inode *tnode = node->private_data;
+	int amount_to_read = MIN(n, n - ((n + off) - tnode->length));
+	memcpy(buf, tnode->data + off, amount_to_read);
+	return amount_to_read;
 }
 
 int tmpfs_lookup(struct vnode *node, char *name, struct vnode **res) {

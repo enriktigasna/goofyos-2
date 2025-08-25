@@ -80,7 +80,7 @@ struct vnode_operations {
 	int (*ioctl)(struct vnode *node, int request, void *arg);
 	int (*getdirents)(struct vnode *node, struct dlist *list);
 	int (*lookup)(struct vnode *node, char *name, struct vnode **res);
-	int (*mkdir)(struct vnode *node, char *name);
+	int (*mkdir)(struct vnode *node, char *name, short flags);
 	int (*create)(struct vnode *node, char *name, short flags);
 	int (*chmod)(struct vnode *node, short flags);
 	int (*remove)(struct vnode *node);
@@ -93,3 +93,5 @@ struct dirent {
 	char *name;
 	short mode;
 };
+
+void unpack_initrd();

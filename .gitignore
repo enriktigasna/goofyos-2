@@ -1,6 +1,7 @@
 /kernel-deps
 /limine
 /ovmf
-/userspace/out
+/root/*
 *.iso
 *.hdd
+/initrd

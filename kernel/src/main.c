@@ -51,7 +51,7 @@ void kmain() {
 	printk("Welcome to GoofyOS\n");
 
 	if (cmdline_contains("initrd")) {
-		// Do initrd mount
+		unpack_initrd();
 	}
 
 	schedule_bsp();
