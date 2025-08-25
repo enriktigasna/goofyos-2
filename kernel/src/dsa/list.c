@@ -49,5 +49,12 @@ struct dnode *dlist_back_pop(struct dlist *queue) {
 	queue->count--;
 }
 
+void dlist_kfree_values(struct dlist *dlist) {
+	for (struct dnode *curr = dlist->head; curr; curr->next) {
+		kfree(curr->value);
+	}
+	kfree(dlist);
+}
+
 // TODO: void dlist_remove_item(struct dlist* deque, struct dnode* item)
 // TODO: int dlist_remove_value(struct dlist* deque, void* value)

@@ -42,6 +42,28 @@ void dentry_resolve(struct dentry *dentry, char *path) {
 	}
 }
 
+struct dlist *vfs_parse_path(char *path) {
+	struct dlist *ret = kzalloc(sizeof(struct dlist));
+	char buf[VFS_PATH_MAX];
+	if (path[0] == '/') {
+		dlist_back_push(ret, strdup("/"));
+		path++;
+	}
+
+	int curr = 0;
+	for (int i = 0; path[i]; i++) {
+		buf[curr] = path[i];
+		if (path[i] == '/') {
+			buf[curr] = '\0';
+			dlist_back_push(ret, strdup(buf));
+			curr = 0;
+			continue;
+		}
+		curr++;
+	}
+	return ret;
+}
+
 void vfs_init() {
 	// Init tmpfs to root and add it to mountpoints
 	struct vnode *node = kzalloc(sizeof(struct vnode));

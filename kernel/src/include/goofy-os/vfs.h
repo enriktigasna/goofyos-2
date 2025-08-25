@@ -22,11 +22,6 @@ struct vfs {
 	void *private_data;
 };
 
-struct file {
-	struct vnode *node;
-	short flags;
-};
-
 struct dentry {
 	char *name;
 	struct dentry *parent;
@@ -92,6 +87,11 @@ struct vnode_operations {
 struct dirent {
 	char *name;
 	short mode;
+};
+
+struct file {
+	struct dentry *entry;
+	short flags;
 };
 
 void unpack_initrd();

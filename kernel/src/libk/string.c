@@ -33,15 +33,13 @@ void *memmove(void *dstptr, const void *srcptr, size_t size) {
 
 int strncmp(char *str1, char *str2, int n) {
 	for (int i = 0; i < n; i++) {
-		if (str1[i] > str2[i])
-			return 1;
+		unsigned char c1 = str1[i];
+		unsigned char c2 = str2[i];
+		if (c1 != c2)
+			return c1 - c2;
 
-		if (str1[i] < str2[i])
-			return -1;
-
-		if (!str1[i]) {
+		if (c1 == '\0')
 			return 0;
-		}
 	}
 	return 0;
 }
@@ -53,7 +51,13 @@ int strlen(char *str) {
 	return i;
 }
 
-int strcmp(char *str1, char *str2) { return strncmp(str1, str2, strlen(str1)); }
+int strcmp(const char *str1, const char *str2) {
+	while (*str1 && *str1 == *str2) {
+		str1++;
+		str2++;
+	}
+	return (unsigned char)*str1 - (unsigned char)*str2;
+}
 
 int memcmp(char *str1, char *str2, int n) {
 	for (int i = 0; i < n; i++) {
