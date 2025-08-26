@@ -56,5 +56,13 @@ void dlist_kfree_values(struct dlist *dlist) {
 	kfree(dlist);
 }
 
+void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
+	for (struct dnode *curr = dlist->head; curr; curr->next) {
+		destructor(curr->value);
+		kfree(curr->value);
+	}
+	kfree(dlist);
+}
+
 // TODO: void dlist_remove_item(struct dlist* deque, struct dnode* item)
 // TODO: int dlist_remove_value(struct dlist* deque, void* value)
