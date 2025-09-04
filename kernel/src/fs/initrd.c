@@ -1,5 +1,6 @@
 #include <goofy-os/boot.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/uapi/stat.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -48,6 +49,10 @@ struct posix_ustar_header *ustar_next(struct posix_ustar_header *header) {
 void unpack_ustar(int length, struct posix_ustar_header *fs) {
 	for (; fs; fs = ustar_next(fs)) {
 		printk("%s\n", fs->name);
+		if (S_ISDIR(oct2bin(fs->mode, 8))) {
+			// vfs_mkdir(fs->name);
+			continue;
+		}
 	};
 }
 

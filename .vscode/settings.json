@@ -88,7 +88,8 @@
 		"list.h": "c",
 		"vfs.h": "c",
 		"errno.h": "c",
-		"stat.h": "c"
+		"stat.h": "c",
+		"hmap.h": "c"
 	},
 	"C_Cpp.default.defines": [
 		"LIMINE_API_REVISION=3",

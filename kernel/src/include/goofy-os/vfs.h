@@ -95,3 +95,5 @@ struct file {
 };
 
 void unpack_initrd();
+
+int vfs_mkdir(char *path);

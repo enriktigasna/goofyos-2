@@ -64,6 +64,31 @@ struct dlist *vfs_parse_path(char *path) {
 	return ret;
 }
 
+int vfs_find_vnode(char *path, struct vnode **res) {}
+
+int vfs_find_parent_vnode(char *path, struct vnode **res) {
+	struct dlist *files = vfs_parse_path(path);
+	kfree(dlist_back_pop(files)->value);
+	// Traverse dcache until can't
+	printk("vfs_find_parent_vnode(%s)\n", path);
+	// rootfs->children_cache
+	// If / start at rootfs (and pop first), else start at dfd
+	// dfd not implemented yet
+	if (path == '/') {
+	}
+	// while files not empty
+	// if dirent:
+	// 	dirent = find_child_of_dirent_with_name
+}
+
+int vfs_mkdir(char *path) {
+	struct vnode *parent;
+	int err = vfs_find_parent_vnode(path, &parent);
+	if (err)
+		return err;
+	return -1;
+}
+
 void vfs_init() {
 	// Init tmpfs to root and add it to mountpoints
 	struct vnode *node = kzalloc(sizeof(struct vnode));
