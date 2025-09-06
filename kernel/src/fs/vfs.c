@@ -10,6 +10,8 @@
 struct hashmap dentry_cache;
 struct hashmap vnode_cache;
 
+struct dentry *global_root;
+
 extern int tmpfs_mount(struct dentry *dentry, struct vfs *vfs);
 void dentry_resolve(struct dentry *dentry, char *path) {
 	struct dlist stack;
@@ -53,25 +55,69 @@ struct dlist *vfs_parse_path(char *path) {
 
 int vfs_find_vnode(char *path, struct vnode **res) {}
 
-int vfs_find_parent_vnode(char *path, struct vnode **res) {
+// TODO add boolean to find_vnode that is if it should only find parent
+int vfs_find_parent_vnode(char *path, struct vnode **res, struct dentry *rel) {
 	struct dlist *files = vfs_parse_path(path);
 	kfree(dlist_back_pop(files)->value);
 	// Traverse dcache until can't
 	printk("vfs_find_parent_vnode(%s)\n", path);
-	return -ENOSYS;
-	// rootfs->children_cache
-	// If / start at rootfs (and pop first), else start at dfd
-	// dfd not implemented yet
-	if (path == '/') {
-	}
-	// while files not empty
-	// if dirent:
-	// 	dirent = find_child_of_dirent_with_name
-}
 
-int vfs_mkdir(char *path) {
+	if (path[0] == '/') {
+		free(dlist_front_pop(files));
+		rel = global_root;
+	}
+
+	if (rel == NULL) {
+		return -EINVAL;
+	}
+
+	struct dentry *cur = rel;
+	// TODO: .. implementation, that also puts parent, and checks for root
+	while (files->head) {
+		size_t size =
+		    sizeof(struct dentry *) + strlen(files->head->value) + 1;
+		struct dcache_key *key = kmalloc(size);
+		key->parent = cur;
+		strcpy(&key->name, files->head->value);
+
+		void *res;
+		if (res = hmap_lookup(&dentry_cache, key, size)) {
+			cur = res;
+			kfree(key);
+			continue;
+		}
+		kfree(key);
+
+		// didn't find in dcache, continue
+		struct vnode_operations *ops = cur->vnode->ops;
+		if (!ops->lookup)
+			return -ENOSYS;
+
+		long num;
+		int err = ops->lookup(cur->vnode, files->head->value, num);
+		if (err)
+			return err;
+
+		// check vnode cache otherwise create
+		struct vnode_key vkey = {.number = num,
+					 .vfs = cur->vnode->curr_vfs};
+
+		if (res = hmap_lookup(&vnode_cache, key, size)) {
+			// create dcache with it
+		}
+	}
+}
+// VA for dcache key
+//(files->head->value)
+
+// 1. Check dcache, if found pop and continue
+
+// 2. fs lookup (if nonexistant -EEXIST)
+// 3. node cache lookup ? create
+
+int vfs_mkdir(char *path, struct dentry *rel) {
 	struct vnode *parent;
-	int err = vfs_find_parent_vnode(path, &parent);
+	int err = vfs_find_parent_vnode(path, &parent, rel);
 	if (err)
 		return err;
 	return -1;
@@ -119,4 +165,6 @@ void vfs_init() {
 
 	vfs_cache_dentry(root_dentry);
 	vfs_cache_vnode(node);
+
+	global_root = root_dentry;
 }
