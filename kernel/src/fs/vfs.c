@@ -25,21 +25,7 @@ struct dentry *rootfs;
 extern int tmpfs_mount(struct dentry *dentry, struct vfs *vfs);
 
 void dentry_resolve(struct dentry *dentry, char *path) {
-	struct dlist stack;
-	memset(&stack, 0, sizeof(struct dlist));
-
-	for (struct dentry *curr = dentry; curr; curr = curr->parent) {
-		dlist_front_push(&stack, curr->name);
-	}
-
-	int len = 0;
-	for (struct dnode *curr = stack.head; curr; curr = curr->next) {
-		path += len;
-		path[0] = '/';
-		char *name = ((struct dentry *)curr->value)->name;
-		strcpy(path + 1, name);
-		len = strlen(name);
-	}
+	// oiasdj oas dj
 }
 
 struct dlist *vfs_parse_path(char *path) {

@@ -64,5 +64,13 @@ void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
 	kfree(dlist);
 }
 
-// TODO: void dlist_remove_item(struct dlist* deque, struct dnode* item)
-// TODO: int dlist_remove_value(struct dlist* deque, void* value)
+void dlist_remove_item(struct dlist *dlist, struct dnode *item) {
+	if (item == dlist->head)
+		return dlist_front_pop(dlist);
+	if (item == dlist->tail)
+		return dlist_back_pop(dlist);
+
+	item->next->prev = item->prev;
+	item->prev->next = item->next;
+	dlist->count--;
+}

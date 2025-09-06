@@ -96,3 +96,24 @@ void *hmap_lookup(struct hashmap *hashmap, void *key, size_t key_size) {
 	}
 	return NULL;
 }
+
+void hmap_remove(struct hashmap *hashmap, void *key, size_t key_size) {
+	uint64_t hash = hashmap->hash_func(key, key_size);
+	struct dlist *ent = &hashmap->buf[hash % hashmap->size];
+	struct dnode *curr = ent->head;
+
+	while (curr) {
+		struct hashmap_entry *cur_ent = curr->value;
+		if (cur_ent->key_size != key_size) {
+			curr = curr->next;
+			continue;
+		}
+		if (!memcmp(key, cur_ent->key, key_size)) {
+			dlist_remove_item(ent, cur_ent);
+			return;
+		}
+
+		curr = curr->next;
+		continue;
+	}
+}

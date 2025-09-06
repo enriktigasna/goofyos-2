@@ -28,6 +28,7 @@ struct tmpfs_inode {
 	char *name;
 	struct dlist *children;
 	char *data;
+	long number;
 	long length;
 	long effective_length;
 	short mode;
