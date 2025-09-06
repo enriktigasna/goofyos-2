@@ -1,8 +1,11 @@
 #include <goofy-os/boot.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/uapi/stat.h>
+#include <goofy-os/vfs.h>
 #include <stddef.h>
 #include <string.h>
+
+#define USTAR_DIR '5'
 
 struct posix_ustar_header {
 	char name[100];
@@ -49,8 +52,8 @@ struct posix_ustar_header *ustar_next(struct posix_ustar_header *header) {
 void unpack_ustar(int length, struct posix_ustar_header *fs) {
 	for (; fs; fs = ustar_next(fs)) {
 		printk("%s\n", fs->name);
-		if (S_ISDIR(oct2bin(fs->mode, 8))) {
-			// vfs_mkdir(fs->name);
+		if (fs->typeflag == USTAR_DIR) {
+			vfs_mkdir(fs->name);
 			continue;
 		}
 	};

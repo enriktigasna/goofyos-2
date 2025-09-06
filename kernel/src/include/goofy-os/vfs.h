@@ -1,12 +1,12 @@
 #include <goofy-os/list.h>
+#include <goofy-os/spinlock.h>
 #include <goofy-os/uapi/stat.h>
 #include <stdbool.h>
 
 #define VFS_PATH_MAX 256
 
-extern struct dentry *rootfs;
-
 struct vnode {
+	struct spinlock lock;
 	struct vnode_operations *ops;
 	struct vfs *curr_vfs;
 	void *private_data;
@@ -14,6 +14,7 @@ struct vnode {
 	int refcount;
 	short mode;
 	bool inuse;
+	long number;
 };
 
 struct vfs {
@@ -21,15 +22,25 @@ struct vfs {
 	long id;
 	struct dentry *root_dentry;
 	void *private_data;
+	struct spinlock lock;
 };
 
 struct dentry {
 	char *name;
 	struct dentry *parent;
-	struct dlist *children_cache;
 	struct vnode *vnode;
-	int refcount;
+	long refcount;
 	bool negative;
+};
+
+struct dcache_key {
+	struct dentry *parent;
+	char name[];
+};
+
+struct vnode_key {
+	struct vfs *vfs;
+	long number;
 };
 
 struct mountpoint {

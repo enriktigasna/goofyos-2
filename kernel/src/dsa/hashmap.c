@@ -32,14 +32,12 @@ struct hashmap_entry {
 	void *value;
 };
 
-struct hashmap *hmap_init() {
+void hmap_init(struct hashmap *hashmap) {
 	// Init with one page from there just double
-	struct hashmap *ret = kmalloc(sizeof(struct hashmap));
-	ret->buf = vzalloc(0x1000);
-	ret->size = 0x1000 / sizeof(struct dlist);
-	ret->count = 0;
-	ret->hash_func = fnva_hash;
-	return ret;
+	hashmap->buf = vzalloc(0x1000);
+	hashmap->size = 0x1000 / sizeof(struct dlist);
+	hashmap->count = 0;
+	hashmap->hash_func = fnva_hash;
 }
 
 void hmap_insert_arr(struct dlist *arr, size_t size, uint64_t hash) {}
@@ -108,8 +106,9 @@ void hmap_remove(struct hashmap *hashmap, void *key, size_t key_size) {
 			curr = curr->next;
 			continue;
 		}
+
 		if (!memcmp(key, cur_ent->key, key_size)) {
-			dlist_remove_item(ent, cur_ent);
+			dlist_remove_item(ent, curr);
 			return;
 		}
 

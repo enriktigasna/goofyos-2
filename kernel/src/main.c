@@ -3,7 +3,6 @@
 #include <goofy-os/cpu.h>
 #include <goofy-os/fbcon.h>
 #include <goofy-os/hcf.h>
-#include <goofy-os/hmap.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
@@ -51,28 +50,6 @@ void kmain() {
 	vfs_init();
 
 	printk("Welcome to GoofyOS\n");
-
-	struct hashmap *hmap = hmap_init();
-	for (int i = 0; i < 1000; i++) {
-		char *key = kmalloc(20);
-		char *value = kmalloc(20);
-		sprintf(key, "a %d", i);
-		sprintf(value, "b %d", i);
-
-		hmap_add(hmap, key, strlen(key), value);
-	}
-
-	// Lookup and verify all values
-	for (int i = 0; i < 1000; i++) {
-		char key[20];
-		sprintf(key, "a %d", i);
-
-		char *result = hmap_lookup(hmap, key, strlen(key));
-
-		char expected[20];
-		sprintf(expected, "b %d", i);
-		printk("%d\n", strcmp(result, expected) == 0);
-	}
 
 	if (cmdline_contains("initrd")) {
 		unpack_initrd();

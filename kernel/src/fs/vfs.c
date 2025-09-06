@@ -1,31 +1,32 @@
+#include <goofy-os/hmap.h>
 #include <goofy-os/list.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
+#include <goofy-os/spinlock.h>
+#include <goofy-os/uapi/errno.h>
 #include <goofy-os/vfs.h>
 #include <string.h>
 
-/**
- * GoofyOS VFS
- *
- * The VFS does not have mountpoints, it is instead a tree of dirent caches. All
- * mountpoints are guaranteed to be found by just walking this tree. This is so
- * that you won't try to create a node through doing a lookup in wrong fs, and
- * messing up state.
- *
- * If a dentry cache doesn't have an entry you are looking for,
- * you go into it's backing vnode, and do lookup.
- *
- * When removing, it creates a negative dentry, so that when all
- * references close, it will call vnode->remove
- *
- */
-
-struct dentry *rootfs;
+struct hashmap dentry_cache;
+struct hashmap vnode_cache;
 
 extern int tmpfs_mount(struct dentry *dentry, struct vfs *vfs);
-
 void dentry_resolve(struct dentry *dentry, char *path) {
-	// oiasdj oas dj
+	struct dlist stack;
+	memset(&stack, 0, sizeof(struct dlist));
+
+	for (struct dentry *curr = dentry; curr; curr = curr->parent) {
+		dlist_front_push(&stack, curr->name);
+	}
+
+	int len = 0;
+	for (struct dnode *curr = stack.head; curr; curr = curr->next) {
+		path += len;
+		path[0] = '/';
+		char *name = ((struct dentry *)curr->value)->name;
+		strcpy(path + 1, name);
+		len = strlen(name);
+	}
 }
 
 struct dlist *vfs_parse_path(char *path) {
@@ -57,6 +58,7 @@ int vfs_find_parent_vnode(char *path, struct vnode **res) {
 	kfree(dlist_back_pop(files)->value);
 	// Traverse dcache until can't
 	printk("vfs_find_parent_vnode(%s)\n", path);
+	return -ENOSYS;
 	// rootfs->children_cache
 	// If / start at rootfs (and pop first), else start at dfd
 	// dfd not implemented yet
@@ -75,8 +77,32 @@ int vfs_mkdir(char *path) {
 	return -1;
 }
 
+void vfs_cache_dentry(struct dentry *ent) {
+	size_t size = sizeof(struct dentry *) + strlen(ent->name) + 1;
+	struct dcache_key *key = kmalloc(size);
+	key->parent = ent->parent;
+	strcpy((char *)&key->name, ent->name);
+
+	hmap_add(&dentry_cache, key, size, ent);
+}
+
+void vfs_cache_vnode(struct vnode *vnode) {
+	struct vnode_key *key = kmalloc(sizeof(struct vnode_key));
+	key->vfs = vnode->curr_vfs;
+	key->number = vnode->number;
+
+	hmap_add(&vnode_cache, key, sizeof(struct vnode_key), vnode);
+}
+
+long vfs_upcount;
+// Use very sparingly, mostly when mounting to prevent same-vfs-id race
+// condition
+struct spinlock vfs_biglock;
+
 void vfs_init() {
-	// Init tmpfs to root and add it to mountpoints
+	hmap_init(&dentry_cache);
+	hmap_init(&vnode_cache);
+
 	struct vnode *node = kzalloc(sizeof(struct vnode));
 	struct vfs *vfs = kzalloc(sizeof(struct vfs));
 	node->mode = S_IFDIR | 0777;
@@ -86,8 +112,11 @@ void vfs_init() {
 	root_dentry->name = strdup("/");
 	root_dentry->vnode = node;
 	root_dentry->refcount = 1;
-	rootfs = root_dentry;
 
 	vfs->root_dentry = root_dentry;
+	vfs->id = vfs_upcount++;
 	tmpfs_mount(root_dentry, vfs);
+
+	vfs_cache_dentry(root_dentry);
+	vfs_cache_vnode(node);
 }

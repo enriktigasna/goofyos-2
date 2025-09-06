@@ -65,10 +65,15 @@ void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
 }
 
 void dlist_remove_item(struct dlist *dlist, struct dnode *item) {
-	if (item == dlist->head)
-		return dlist_front_pop(dlist);
-	if (item == dlist->tail)
-		return dlist_back_pop(dlist);
+	if (item == dlist->head) {
+		dlist_front_pop(dlist);
+		return;
+	}
+
+	if (item == dlist->tail) {
+		dlist_back_pop(dlist);
+		return;
+	}
 
 	item->next->prev = item->prev;
 	item->prev->next = item->next;
