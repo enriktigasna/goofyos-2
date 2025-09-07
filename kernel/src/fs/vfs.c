@@ -50,15 +50,72 @@ struct dlist *vfs_parse_path(char *path) {
 		}
 		curr++;
 	}
+	if (curr > 0) {
+		buf[curr] = '\0';
+		dlist_back_push(ret, strdup(buf));
+	}
 	return ret;
 }
 
-int vfs_find_vnode(char *path, struct vnode **res) {}
+int vfs_find_vnode(struct vnode *vnode, long num, struct vnode **res) {
+	if (!vnode || !res || !vnode->ops || !vnode->curr_vfs)
+		return EINVAL;
 
-// TODO add boolean to find_vnode that is if it should only find parent
-int vfs_find_parent_vnode(char *path, struct vnode **res, struct dentry *rel) {
+	struct vnode_key vkey = {.number = num, .vfs = vnode->curr_vfs};
+	struct vnode *ret =
+	    hmap_lookup(&vnode_cache, &vkey, sizeof(struct vnode_key));
+	if (ret)
+		goto SUCCESS;
+
+	if (!vnode->ops->create_node)
+		return -ENOSYS;
+
+	int err = vnode->ops->create_node(vnode, num, &ret);
+	if (err)
+		return err;
+
+SUCCESS:
+	*res = ret;
+	return 0;
+}
+
+int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
+	if (!dent || !res)
+		return -EINVAL;
+
+	struct dentry *ret;
+	size_t dkey_size = sizeof(struct dentry *) + strlen(name) + 1;
+	struct dcache_key *dkey = kmalloc(dkey_size);
+	dkey->parent = dent;
+	strcpy(dkey->name, name);
+
+	ret = hmap_lookup(&dentry_cache, dkey, dkey_size);
+	kfree(dkey);
+	if (ret)
+		goto SUCCESS;
+
+	ret = kzalloc(sizeof(struct dentry));
+	long num;
+	struct vnode_operations *ops = dent->vnode->ops;
+	int err = ops->lookup(dent->vnode, name, &num);
+	if (err)
+		return err;
+
+	err = vfs_find_vnode(dent->vnode, num, &ret->vnode);
+	if (err)
+		return err;
+
+SUCCESS:
+	*res = ret;
+	return 0;
+}
+
+int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
+		    bool parent) {
 	struct dlist *files = vfs_parse_path(path);
-	kfree(dlist_back_pop(files)->value);
+
+	if (parent)
+		kfree(dlist_back_pop(files)->value);
 	// Traverse dcache until can't
 	printk("vfs_find_parent_vnode(%s)\n", path);
 
@@ -72,40 +129,29 @@ int vfs_find_parent_vnode(char *path, struct vnode **res, struct dentry *rel) {
 	}
 
 	struct dentry *cur = rel;
-	// TODO: .. implementation, that also puts parent, and checks for root
+	// TODO in future: .. representation
+	// For efficient refcounting: have a lowest value, if we .. from rel,
+	// then that will be the new rel (relative root we traverse from)
+	// All new dentries need to be kept
+	// in a list, and initialized to 0 refcount
+
+	// After traversal is complete, walk from res to rel adding one refcount
+	// to each by parent
+
 	while (files->head) {
-		size_t size =
-		    sizeof(struct dentry *) + strlen(files->head->value) + 1;
-		struct dcache_key *key = kmalloc(size);
-		key->parent = cur;
-		strcpy(&key->name, files->head->value);
-
-		void *res;
-		if (res = hmap_lookup(&dentry_cache, key, size)) {
-			cur = res;
-			kfree(key);
-			continue;
-		}
-		kfree(key);
-
-		// didn't find in dcache, continue
-		struct vnode_operations *ops = cur->vnode->ops;
-		if (!ops->lookup)
-			return -ENOSYS;
-
-		long num;
-		int err = ops->lookup(cur->vnode, files->head->value, num);
-		if (err)
+		struct dentry *res;
+		int err = vfs_find_child(cur, files->head->value, &res);
+		kfree(dlist_front_pop(files)->value);
+		if (err) {
+			dlist_kfree_values(files);
 			return err;
-
-		// check vnode cache otherwise create
-		struct vnode_key vkey = {.number = num,
-					 .vfs = cur->vnode->curr_vfs};
-
-		if (res = hmap_lookup(&vnode_cache, key, size)) {
-			// create dcache with it
 		}
+
+		cur = res;
 	}
+
+	*res = cur;
+	return 0;
 }
 // VA for dcache key
 //(files->head->value)
@@ -117,7 +163,7 @@ int vfs_find_parent_vnode(char *path, struct vnode **res, struct dentry *rel) {
 
 int vfs_mkdir(char *path, struct dentry *rel) {
 	struct vnode *parent;
-	int err = vfs_find_parent_vnode(path, &parent, rel);
+	int err = vfs_find_dentry(path, &parent, rel, true);
 	if (err)
 		return err;
 	return -1;

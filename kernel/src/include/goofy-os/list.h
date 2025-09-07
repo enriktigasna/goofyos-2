@@ -25,3 +25,4 @@ struct dnode *dlist_front_pop(struct dlist *stack);
 void dlist_back_push(struct dlist *queue, void *value);
 struct dnode *dlist_back_pop(struct dlist *queue);
 void dlist_remove_item(struct dlist *dlist, struct dnode *item);
+void dlist_kfree_values(struct dlist *dlist);
