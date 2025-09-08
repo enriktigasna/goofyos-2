@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#define USTAR_REG '0'
+#define USTAR_REG_2 '\0'
 #define USTAR_DIR '5'
 
 struct posix_ustar_header {
@@ -52,9 +54,20 @@ struct posix_ustar_header *ustar_next(struct posix_ustar_header *header) {
 void unpack_ustar(int length, struct posix_ustar_header *fs) {
 	for (; fs; fs = ustar_next(fs)) {
 		printk("%s\n", fs->name);
-		if (fs->typeflag == USTAR_DIR) {
-			vfs_mkdir(fs->name, NULL, 0);
+		if (!strcmp(fs->name, "./"))
 			continue;
+
+		int err;
+		switch (fs->typeflag) {
+		case USTAR_DIR:
+			err = vfs_mkdir(fs->name, NULL, 0);
+			printk("mkdir response %d\n", err);
+			break;
+		case USTAR_REG_2:
+		case USTAR_REG:
+			err = vfs_create(fs->name, NULL, 0);
+			printk("create response %d\n", err);
+			break;
 		}
 	};
 }

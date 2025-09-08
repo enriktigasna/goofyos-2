@@ -80,6 +80,7 @@ SUCCESS:
 }
 
 int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
+	printk("vfs_find_child(%s, %s)\n", dent->name, name);
 	if (!dent || !res)
 		return -EINVAL;
 
@@ -87,7 +88,7 @@ int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
 	size_t dkey_size = sizeof(struct dentry *) + strlen(name) + 1;
 	struct dcache_key *dkey = kmalloc(dkey_size);
 	dkey->parent = dent;
-	strcpy(dkey->name, name);
+	strcpy((char *)&dkey->name, name);
 
 	ret = hmap_lookup(&dentry_cache, dkey, dkey_size);
 	kfree(dkey);
@@ -105,6 +106,10 @@ int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
 	if (err)
 		return err;
 
+	ret->name = strdup(name);
+	ret->parent = dent;
+	ret->refcount = 1;
+
 SUCCESS:
 	*res = ret;
 	return 0;
@@ -113,20 +118,19 @@ SUCCESS:
 int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		    bool parent) {
 	struct dlist *files = vfs_parse_path(path);
+	printk("vfs_find_dentry(%s, parent=%d)\n", path, parent);
 	printk("parsed %d from %s\n", files->count, path);
 
 	if (!files->count || (files->count == 1 && parent)) {
 		return -EINVAL;
 	}
 
-	printk("files count %d\n", files->count);
-
 	if (parent) {
 		kfree(files->tail->value);
 		kfree(dlist_back_pop(files));
+		printk("removed trailing child\n");
 	}
 	// Traverse dcache until can't
-	printk("vfs_find_parent_vnode(%s)\n", path);
 
 	if (path[0] == '/') {
 		kfree(files->head->value);
@@ -135,12 +139,17 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	}
 
 	if (path[0] == '.') {
+		printk("removed leading .\n");
 		kfree(files->head->value);
 		kfree(dlist_front_pop(files));
 	}
 
 	if (rel == NULL)
 		rel = global_root;
+
+	for (struct dnode *currf = files->head; currf; currf = currf->next) {
+		printk("%s\n", currf->value);
+	}
 
 	struct dentry *cur = rel;
 	// TODO in future: .. representation
@@ -155,7 +164,11 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	while (files->head) {
 		struct dentry *res;
 		int err = vfs_find_child(cur, files->head->value, &res);
-		kfree(dlist_front_pop(files)->value);
+
+		struct dnode *fnode = dlist_front_pop(files);
+		kfree(fnode->value);
+		kfree(fnode);
+
 		if (err) {
 			dlist_kfree_values(files);
 			return err;
@@ -181,18 +194,44 @@ int vfs_mkdir(char *path, struct dentry *rel, short flags) {
 	if (err)
 		return err;
 
+	if (!parent->vnode->ops->mkdir)
+		return -ENOSYS;
+
 	// We want it to error, this is how we check if it doesnt exist
 	struct dlist *files = vfs_parse_path(path);
 	char *child = strdup(files->tail->value);
 	dlist_kfree_values(files);
 
 	struct dentry *dummy;
-	if (vfs_find_child(parent, child, &dummy)) {
+	if (!vfs_find_child(parent, child, &dummy)) {
 		kfree(child);
 		return -EEXIST;
 	}
 
-	return parent->vnode->ops->mkdir(parent->vnode, child, S_IFDIR | flags);
+	return parent->vnode->ops->mkdir(parent->vnode, child, flags);
+}
+
+int vfs_create(char *path, struct dentry *rel, short flags) {
+	struct dentry *parent;
+	int err = vfs_find_dentry(path, &parent, rel, true);
+	if (err)
+		return err;
+
+	if (!parent->vnode->ops->create)
+		return -ENOSYS;
+
+	// We want it to error, this is how we check if it doesnt exist
+	struct dlist *files = vfs_parse_path(path);
+	char *child = strdup(files->tail->value);
+	dlist_kfree_values(files);
+
+	struct dentry *dummy;
+	if (!vfs_find_child(parent, child, &dummy)) {
+		kfree(child);
+		return -EEXIST;
+	}
+
+	return parent->vnode->ops->create(parent->vnode, child, flags);
 }
 
 void vfs_cache_dentry(struct dentry *ent) {

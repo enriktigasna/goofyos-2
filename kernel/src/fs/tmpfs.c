@@ -1,8 +1,10 @@
+#include <goofy-os/hmap.h>
 #include <goofy-os/list.h>
 #include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
-#include <goofy-os/uapi/errno.h> #include <goofy-os/uapi/stat.h>
+#include <goofy-os/uapi/errno.h>
+#include <goofy-os/uapi/stat.h>
 #include <goofy-os/vfs.h>
 #include <goofy-os/vmalloc.h>
 #include <string.h>
@@ -12,9 +14,13 @@
 
 int tmpfs_mkdir(struct vnode *node, char *name, short flags);
 int tmpfs_lookup(struct vnode *node, char *name, long *num);
+int tmpfs_create_node(struct vnode *node, long num, struct vnode **res);
+int tmpfs_create(struct vnode *node, char *name, short flags);
 struct vnode_operations tmpfs_operations = {
     .mkdir = tmpfs_mkdir,
+    .create = tmpfs_create,
     .lookup = tmpfs_lookup,
+    .create_node = tmpfs_create_node,
 };
 
 struct tmpfs_inode {
@@ -29,6 +35,7 @@ struct tmpfs_inode {
 
 struct tmpfs_superblock {
 	long current_inode;
+	struct hashmap *tnode_cache;
 };
 
 bool tmpfs_has_file(struct tmpfs_inode *node, char *name) {
@@ -53,15 +60,46 @@ int tmpfs_mkdir(struct vnode *node, char *name, short flags) {
 	struct tmpfs_inode *child_tnode = kzalloc(sizeof(struct tmpfs_inode));
 	child_tnode->name = strdup(name);
 	child_tnode->mode = (flags & ~S_IFMT) | S_IFDIR;
+	child_tnode->children = kzalloc(sizeof(struct dlist));
 	acquire(&node->curr_vfs->lock);
 	child_tnode->number = tblock->current_inode++;
 	release(&node->curr_vfs->lock);
 	dlist_back_push(tnode->children, child_tnode);
 
+	hmap_add(tblock->tnode_cache, &child_tnode->number, sizeof(long),
+		 child_tnode);
+
 	release(&node->lock);
+	return 0;
+}
+
+int tmpfs_create(struct vnode *node, char *name, short flags) {
+	acquire(&node->lock);
+
+	struct tmpfs_inode *tnode = node->private_data;
+	struct tmpfs_superblock *tblock = node->curr_vfs->private_data;
+
+	if (tmpfs_has_file(tnode, name))
+		return -EEXIST;
+
+	struct tmpfs_inode *child_tnode = kzalloc(sizeof(struct tmpfs_inode));
+	child_tnode->name = strdup(name);
+	child_tnode->mode = (flags & ~S_IFMT) | S_IFREG;
+	child_tnode->children = kzalloc(sizeof(struct dlist));
+	acquire(&node->curr_vfs->lock);
+	child_tnode->number = tblock->current_inode++;
+	release(&node->curr_vfs->lock);
+	dlist_back_push(tnode->children, child_tnode);
+
+	hmap_add(tblock->tnode_cache, &child_tnode->number, sizeof(long),
+		 child_tnode);
+
+	release(&node->lock);
+	return 0;
 }
 
 int tmpfs_lookup(struct vnode *node, char *name, long *num) {
+	printk("tmpfs_lookup(%p, %s)\n", node, name);
 	acquire(&node->lock);
 	struct tmpfs_inode *tnode = node->private_data;
 
@@ -70,12 +108,34 @@ int tmpfs_lookup(struct vnode *node, char *name, long *num) {
 		struct tmpfs_inode *curr_tnode = curr->value;
 		if (!strcmp(curr_tnode->name, name)) {
 			release(&node->lock);
-			return curr_tnode->number;
+			*num = curr_tnode->number;
+			return 0;
 		}
 	}
 
 	release(&node->lock);
 	return -ENOENT;
+}
+
+int tmpfs_create_node(struct vnode *node, long num, struct vnode **res) {
+	struct tmpfs_superblock *tblock = node->curr_vfs->private_data;
+	struct tmpfs_inode *tnode =
+	    hmap_lookup(tblock->tnode_cache, &num, sizeof(long));
+	if (!tnode) {
+		return -ENOENT;
+	}
+
+	struct vnode *new_node = kzalloc(sizeof(struct vnode));
+	new_node->ops = &tmpfs_operations;
+	new_node->curr_vfs = node->curr_vfs;
+	new_node->number = num;
+	new_node->mode = tnode->mode;
+	new_node->private_data = tnode;
+	new_node->refcount = 1;
+
+	*res = new_node;
+
+	return 0;
 }
 
 void tmpfs_mount(struct dentry *dentry, struct vfs *vfs) {
@@ -94,6 +154,12 @@ void tmpfs_mount(struct dentry *dentry, struct vfs *vfs) {
 	vfs->private_data = kzalloc(sizeof(struct tmpfs_superblock));
 	root_inode->number =
 	    ((struct tmpfs_superblock *)vfs->private_data)->current_inode++;
+
+	((struct tmpfs_superblock *)vfs->private_data)->tnode_cache =
+	    kzalloc(sizeof(struct hashmap));
+	hmap_init(((struct tmpfs_superblock *)vfs->private_data)->tnode_cache);
+	hmap_add(((struct tmpfs_superblock *)vfs->private_data)->tnode_cache,
+		 &root_inode->number, sizeof(long), root_inode);
 
 	char path[VFS_PATH_MAX + 1];
 	dentry_resolve(dentry, path);
