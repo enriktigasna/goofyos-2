@@ -5,6 +5,8 @@
 #include <goofy-os/spinlock.h>
 #include <string.h>
 
+// #define PRINTK_SLAB
+
 const size_t kmalloc_sizes[SLAB_COUNT] = {8,   16,  32,	  64,  128,
 					  256, 512, 1024, 2048};
 struct kmem_cache kmalloc_caches[SLAB_COUNT];
@@ -171,6 +173,11 @@ void _kfree(void *object) {
 	struct slab *slab = pg->slab;
 	struct kmem_cache *cache = slab->cache;
 
+#ifdef PRINTK_SLAB
+	printk("kfree(%p) (%d) (%s)\n", object, slab->cache->size,
+	       slab->cache->name);
+#endif
+
 	// Add to slab freelist
 	size_t max_objects = PAGE_SIZE / cache->size;
 	*(void **)object = slab->freelist;
@@ -224,11 +231,21 @@ void kfree(void *object) {
 }
 
 void *kmalloc(size_t size) {
+#ifdef PRINTK_SLAB
+	printk("kmalloc(%d)\n", size);
+#endif
+
 	if (size > 2048)
 		return NULL;
 
 	struct kmem_cache *cache = &kmalloc_caches[kmalloc_idx(size)];
-	return kmem_cache_alloc(cache);
+	void *ret = kmem_cache_alloc(cache);
+
+#ifdef PRINTK_SLAB
+	printk("kmalloc ret = %p from %s\n", ret, cache->name);
+#endif
+
+	return ret;
 }
 
 void *kzalloc(size_t size) {

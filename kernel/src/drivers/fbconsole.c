@@ -170,7 +170,7 @@ void console_init(struct limine_framebuffer *framebuffer) {
 	    .width = framebuffer->height,
 	    .height = framebuffer->height,
 	    .color = COLOR(WHITE, BLACK),
-	    .enabled = true,
+	    .enabled = false,
 	};
 	fbcon.queue = vzalloc(fbcon.width_char * fbcon.height_char *
 			      sizeof(struct fbconsole_queue_item));
@@ -183,4 +183,5 @@ void console_init(struct limine_framebuffer *framebuffer) {
 			    .x = i, .y = j, .c = ' ', .col = fbcon.color});
 		}
 	}
+	fbcon.enabled = true;
 }

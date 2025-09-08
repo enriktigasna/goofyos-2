@@ -128,7 +128,7 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	// Traverse dcache until can't
 	printk("vfs_find_parent_vnode(%s)\n", path);
 
-	if (path[0] == '/' || rel == NULL) {
+	if (path[0] == '/') {
 		kfree(files->head->value);
 		kfree(dlist_front_pop(files));
 		rel = global_root;
@@ -139,9 +139,8 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		kfree(dlist_front_pop(files));
 	}
 
-	if (!files->count) {
-		return -EINVAL;
-	}
+	if (rel == NULL)
+		rel = global_root;
 
 	struct dentry *cur = rel;
 	// TODO in future: .. representation
@@ -176,13 +175,24 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 // 2. fs lookup (if nonexistant -EEXIST)
 // 3. node cache lookup ? create
 
-int vfs_mkdir(char *path, struct dentry *rel) {
+int vfs_mkdir(char *path, struct dentry *rel, short flags) {
 	struct dentry *parent;
 	int err = vfs_find_dentry(path, &parent, rel, true);
-	printk("mkdir err %d\n", err);
 	if (err)
 		return err;
-	return -1;
+
+	// We want it to error, this is how we check if it doesnt exist
+	struct dlist *files = vfs_parse_path(path);
+	char *child = strdup(files->tail->value);
+	dlist_kfree_values(files);
+
+	struct dentry *dummy;
+	if (vfs_find_child(parent, child, &dummy)) {
+		kfree(child);
+		return -EEXIST;
+	}
+
+	return parent->vnode->ops->mkdir(parent->vnode, child, S_IFDIR | flags);
 }
 
 void vfs_cache_dentry(struct dentry *ent) {

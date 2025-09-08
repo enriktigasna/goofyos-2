@@ -81,4 +81,4 @@ struct file {
 
 void unpack_initrd();
 
-int vfs_mkdir(char *path, struct dentry *rel);
+int vfs_mkdir(char *path, struct dentry *rel, short flags);

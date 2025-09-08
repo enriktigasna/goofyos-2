@@ -53,7 +53,7 @@ void unpack_ustar(int length, struct posix_ustar_header *fs) {
 	for (; fs; fs = ustar_next(fs)) {
 		printk("%s\n", fs->name);
 		if (fs->typeflag == USTAR_DIR) {
-			vfs_mkdir(fs->name, NULL);
+			vfs_mkdir(fs->name, NULL, 0);
 			continue;
 		}
 	};

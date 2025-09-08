@@ -58,8 +58,9 @@ struct dnode *dlist_back_pop(struct dlist *queue) {
 }
 
 void dlist_kfree_values(struct dlist *dlist) {
-	for (struct dnode *curr = dlist->head; curr; curr->next) {
-		kfree(curr->value);
+	while (dlist->head) {
+		kfree(dlist->head->value);
+		kfree(dlist_front_pop(dlist));
 	}
 	kfree(dlist);
 }

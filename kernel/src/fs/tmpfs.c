@@ -75,7 +75,7 @@ int tmpfs_lookup(struct vnode *node, char *name, long *num) {
 	}
 
 	release(&node->lock);
-	return -EEXIST;
+	return -ENOENT;
 }
 
 void tmpfs_mount(struct dentry *dentry, struct vfs *vfs) {
