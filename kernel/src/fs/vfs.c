@@ -113,18 +113,33 @@ SUCCESS:
 int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		    bool parent) {
 	struct dlist *files = vfs_parse_path(path);
+	printk("parsed %d from %s\n", files->count, path);
 
-	if (parent)
-		kfree(dlist_back_pop(files)->value);
+	if (!files->count || (files->count == 1 && parent)) {
+		return -EINVAL;
+	}
+
+	printk("files count %d\n", files->count);
+
+	if (parent) {
+		kfree(files->tail->value);
+		kfree(dlist_back_pop(files));
+	}
 	// Traverse dcache until can't
 	printk("vfs_find_parent_vnode(%s)\n", path);
 
-	if (path[0] == '/') {
-		free(dlist_front_pop(files));
+	if (path[0] == '/' || rel == NULL) {
+		kfree(files->head->value);
+		kfree(dlist_front_pop(files));
 		rel = global_root;
 	}
 
-	if (rel == NULL) {
+	if (path[0] == '.') {
+		kfree(files->head->value);
+		kfree(dlist_front_pop(files));
+	}
+
+	if (!files->count) {
 		return -EINVAL;
 	}
 
@@ -162,8 +177,9 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 // 3. node cache lookup ? create
 
 int vfs_mkdir(char *path, struct dentry *rel) {
-	struct vnode *parent;
+	struct dentry *parent;
 	int err = vfs_find_dentry(path, &parent, rel, true);
+	printk("mkdir err %d\n", err);
 	if (err)
 		return err;
 	return -1;

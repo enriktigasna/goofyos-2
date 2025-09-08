@@ -17,13 +17,19 @@ void dlist_front_push(struct dlist *stack, void *value) {
 
 struct dnode *dlist_front_pop(struct dlist *stack) {
 	struct dnode *ret = stack->head;
+	if (!ret) {
+		return ret;
+	}
+
 	if (ret->next)
 		ret->next->prev = NULL;
-	ret->next = NULL;
 	stack->head = stack->head->next;
 	if (!stack->head)
 		stack->tail = NULL;
 	stack->count--;
+
+	ret->next = NULL;
+	return ret;
 }
 
 void dlist_back_push(struct dlist *queue, void *value) {
@@ -42,11 +48,13 @@ struct dnode *dlist_back_pop(struct dlist *queue) {
 	struct dnode *ret = queue->tail;
 	if (ret->prev)
 		ret->prev->next = NULL;
-	ret->prev = NULL;
 	queue->tail = queue->tail->prev;
 	if (!queue->tail)
 		queue->head = NULL;
 	queue->count--;
+
+	ret->prev = NULL;
+	return ret;
 }
 
 void dlist_kfree_values(struct dlist *dlist) {

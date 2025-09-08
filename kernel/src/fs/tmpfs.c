@@ -11,8 +11,10 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 int tmpfs_mkdir(struct vnode *node, char *name, short flags);
+int tmpfs_lookup(struct vnode *node, char *name, long *num);
 struct vnode_operations tmpfs_operations = {
     .mkdir = tmpfs_mkdir,
+    .lookup = tmpfs_lookup,
 };
 
 struct tmpfs_inode {
@@ -57,6 +59,23 @@ int tmpfs_mkdir(struct vnode *node, char *name, short flags) {
 	dlist_back_push(tnode->children, child_tnode);
 
 	release(&node->lock);
+}
+
+int tmpfs_lookup(struct vnode *node, char *name, long *num) {
+	acquire(&node->lock);
+	struct tmpfs_inode *tnode = node->private_data;
+
+	struct dlist *children = tnode->children;
+	for (struct dnode *curr = children->head; curr; curr = curr->next) {
+		struct tmpfs_inode *curr_tnode = curr->value;
+		if (!strcmp(curr_tnode->name, name)) {
+			release(&node->lock);
+			return curr_tnode->number;
+		}
+	}
+
+	release(&node->lock);
+	return -EEXIST;
 }
 
 void tmpfs_mount(struct dentry *dentry, struct vfs *vfs) {

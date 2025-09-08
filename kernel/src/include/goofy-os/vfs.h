@@ -65,7 +65,7 @@ struct vnode_operations {
 	int (*remove)(struct vnode *node);
 	int (*rmdir)(struct vnode *node);
 	int (*move)(struct vnode *node, struct dentry dentry);
-	int (*create_node)(vnode *node, long num, struct vnode **res);
+	int (*create_node)(struct vnode *node, long num, struct vnode **res);
 	int (*destroy_node)(struct vnode *node);
 };
 
@@ -81,4 +81,4 @@ struct file {
 
 void unpack_initrd();
 
-int vfs_mkdir(char *path);
+int vfs_mkdir(char *path, struct dentry *rel);
