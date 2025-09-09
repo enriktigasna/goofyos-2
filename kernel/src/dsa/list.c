@@ -15,7 +15,7 @@ void dlist_front_push(struct dlist *stack, void *value) {
 	stack->count++;
 }
 
-struct dnode *dlist_front_pop(struct dlist *stack) {
+void *dlist_front_pop(struct dlist *stack) {
 	struct dnode *ret = stack->head;
 	if (!ret) {
 		return ret;
@@ -29,7 +29,10 @@ struct dnode *dlist_front_pop(struct dlist *stack) {
 	stack->count--;
 
 	ret->next = NULL;
-	return ret;
+	void *val = ret->value;
+	kfree(ret);
+
+	return val;
 }
 
 void dlist_back_push(struct dlist *queue, void *value) {
@@ -44,7 +47,7 @@ void dlist_back_push(struct dlist *queue, void *value) {
 	queue->count++;
 }
 
-struct dnode *dlist_back_pop(struct dlist *queue) {
+void *dlist_back_pop(struct dlist *queue) {
 	struct dnode *ret = queue->tail;
 	if (ret->prev)
 		ret->prev->next = NULL;
@@ -54,15 +57,16 @@ struct dnode *dlist_back_pop(struct dlist *queue) {
 	queue->count--;
 
 	ret->prev = NULL;
-	return ret;
+	void *val = ret->value;
+	kfree(ret);
+
+	return val;
 }
 
 void dlist_kfree_values(struct dlist *dlist) {
 	while (dlist->head) {
-		kfree(dlist->head->value);
 		kfree(dlist_front_pop(dlist));
 	}
-	kfree(dlist);
 }
 
 void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
@@ -70,7 +74,6 @@ void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
 		destructor(curr->value);
 		kfree(curr->value);
 	}
-	kfree(dlist);
 }
 
 void dlist_remove_item(struct dlist *dlist, struct dnode *item) {

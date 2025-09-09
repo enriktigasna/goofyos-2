@@ -126,21 +126,18 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	}
 
 	if (parent) {
-		kfree(files->tail->value);
 		kfree(dlist_back_pop(files));
 		printk("removed trailing child\n");
 	}
 	// Traverse dcache until can't
 
 	if (path[0] == '/') {
-		kfree(files->head->value);
 		kfree(dlist_front_pop(files));
 		rel = global_root;
 	}
 
 	if (path[0] == '.') {
 		printk("removed leading .\n");
-		kfree(files->head->value);
 		kfree(dlist_front_pop(files));
 	}
 
@@ -165,9 +162,7 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		struct dentry *res;
 		int err = vfs_find_child(cur, files->head->value, &res);
 
-		struct dnode *fnode = dlist_front_pop(files);
-		kfree(fnode->value);
-		kfree(fnode);
+		kfree(dlist_front_pop(files));
 
 		if (err) {
 			dlist_kfree_values(files);

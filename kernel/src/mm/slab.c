@@ -5,7 +5,7 @@
 #include <goofy-os/spinlock.h>
 #include <string.h>
 
-// #define PRINTK_SLAB
+#define PRINTK_SLAB
 
 const size_t kmalloc_sizes[SLAB_COUNT] = {8,   16,  32,	  64,  128,
 					  256, 512, 1024, 2048};
