@@ -1,5 +1,6 @@
 #include <goofy-os/boot.h>
 #include <goofy-os/printk.h>
+#include <goofy-os/slab.h>
 #include <goofy-os/uapi/stat.h>
 #include <goofy-os/vfs.h>
 #include <stddef.h>
@@ -61,12 +62,34 @@ void unpack_ustar(int length, struct posix_ustar_header *fs) {
 		switch (fs->typeflag) {
 		case USTAR_DIR:
 			err = vfs_mkdir(fs->name, NULL, 0);
-			printk("mkdir response %d\n", err);
+			if (err)
+				printk("WARNING: mkdir %s returned %d",
+				       fs->name, err);
 			break;
 		case USTAR_REG_2:
 		case USTAR_REG:
 			err = vfs_create(fs->name, NULL, 0);
-			printk("create response %d\n", err);
+			if (err) {
+				printk("WARNING: create %s returned %d",
+				       fs->name, err);
+				continue;
+			}
+			struct file *fd = kzalloc(sizeof(struct file));
+			err = vfs_open(fs->name, NULL, 0, fd);
+			if (err) {
+				printk("WARNING: open %s returned %d", fs->name,
+				       err);
+			}
+
+			int err = vfs_write(fd, (char *)(fs) + 512,
+					    oct2bin(fs->size, 11));
+
+			printk("%s\n", fs->size);
+			printk("Wrote %d into %s\n", err, fs->name);
+
+			vfs_close(fd);
+			kfree(fd);
+
 			break;
 		}
 	};

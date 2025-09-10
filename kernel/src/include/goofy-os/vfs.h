@@ -89,3 +89,6 @@ void unpack_initrd();
 int vfs_mkdir(char *path, struct dentry *rel, short flags);
 int vfs_create(char *path, struct dentry *rel, short flags);
 int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd);
+int vfs_write(struct file *fd, char *buf, long n);
+int vfs_read(struct file *fd, char *buf, long n);
+int vfs_close(struct file *fd);

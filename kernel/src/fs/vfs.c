@@ -80,7 +80,6 @@ SUCCESS:
 }
 
 int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
-	printk("vfs_find_child(%s, %s)\n", dent->name, name);
 	if (!dent || !res)
 		return -EINVAL;
 
@@ -123,8 +122,6 @@ SUCCESS:
 int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		    bool parent) {
 	struct dlist *files = vfs_parse_path(path);
-	printk("vfs_find_dentry(%s, parent=%d)\n", path, parent);
-	printk("parsed %d from %s\n", files->count, path);
 
 	if (!files->count || (files->count == 1 && parent)) {
 		return -EINVAL;
@@ -132,7 +129,6 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 
 	if (parent) {
 		kfree(dlist_back_pop(files));
-		printk("removed trailing child\n");
 	}
 
 	if (path[0] == '/') {
@@ -142,10 +138,6 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 
 	if (rel == NULL)
 		rel = global_root;
-
-	for (struct dnode *currf = files->head; currf; currf = currf->next) {
-		printk("%s\n", currf->value);
-	}
 
 	struct dentry *cur = rel;
 	// TODO in future: .. representation
@@ -222,6 +214,8 @@ int vfs_create(char *path, struct dentry *rel, short flags) {
 }
 
 int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd) {
+	printk("vfs_open(%s)\n", path);
+
 	struct dentry *file;
 	int err = vfs_find_dentry(path, &file, rel, false);
 	if (err)
@@ -233,7 +227,10 @@ int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd) {
 	return 0;
 }
 
+int vfs_close(struct file *fd) { return 0; }
+
 int vfs_write(struct file *fd, char *buf, long n) {
+	printk("vfs_write(%s, %d)\n", fd->entry->name, n);
 	struct vnode_operations *ops = fd->entry->vnode->ops;
 	if (!ops->write)
 		return -ENOSYS;
@@ -248,6 +245,7 @@ int vfs_write(struct file *fd, char *buf, long n) {
 }
 
 int vfs_read(struct file *fd, char *buf, long n) {
+	printk("vfs_read(%s, %d)\n", fd->entry->name, n);
 	struct vnode_operations *ops = fd->entry->vnode->ops;
 	if (!ops->read)
 		return -ENOSYS;
@@ -279,8 +277,6 @@ void vfs_cache_vnode(struct vnode *vnode) {
 }
 
 long vfs_upcount;
-// Use very sparingly, mostly when mounting to prevent same-vfs-id race
-// condition
 struct spinlock vfs_biglock;
 
 void vfs_init() {

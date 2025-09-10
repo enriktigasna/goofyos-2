@@ -109,9 +109,14 @@ int tmpfs_read(struct vnode *node, char *buf, long n, long off) {
 	}
 
 	struct tmpfs_inode *tnode = node->private_data;
-	long final_off = MIN(tnode->length, off + n);
-	long to_read = final_off - off;
+	if (off >= tnode->length) {
+		return 0;
+	}
 
+	long available = tnode->length - off;
+	long to_read = MIN(n, available);
+
+	printk("Trying to read %d from %d long file\n", to_read, tnode->length);
 	memcpy(buf, tnode->data, to_read);
 	return to_read;
 }
@@ -122,21 +127,24 @@ int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
 	}
 
 	struct tmpfs_inode *tnode = node->private_data;
-	long new_length = MIN(tnode->length, off + n);
+	long new_length = MAX(tnode->length, off + n);
 
-	if (new_length < tnode->effective_length) {
-		char *new = vmalloc((new_length + 0xfff) & ~0xfff);
+	if (new_length > tnode->effective_length) {
+		size_t alloc_size = (new_length + 0xfff) & ~0xfff;
+		char *new = vmalloc(alloc_size);
 		memcpy(new, tnode->data, tnode->length);
 		vfree(tnode->data);
 		tnode->data = new;
+		tnode->effective_length = alloc_size;
 	}
+
+	memcpy(&tnode->data[off], buf, n);
 
 	tnode->length = new_length;
 	return n;
 }
 
 int tmpfs_lookup(struct vnode *node, char *name, long *num) {
-	printk("tmpfs_lookup(%p, %s)\n", node, name);
 	acquire(&node->lock);
 	struct tmpfs_inode *tnode = node->private_data;
 
