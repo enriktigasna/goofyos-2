@@ -16,11 +16,16 @@ int tmpfs_mkdir(struct vnode *node, char *name, short flags);
 int tmpfs_lookup(struct vnode *node, char *name, long *num);
 int tmpfs_create_node(struct vnode *node, long num, struct vnode **res);
 int tmpfs_create(struct vnode *node, char *name, short flags);
+int tmpfs_read(struct vnode *node, char *buf, long n, long off);
+int tmpfs_write(struct vnode *node, char *buf, long n, long off);
+
 struct vnode_operations tmpfs_operations = {
     .mkdir = tmpfs_mkdir,
     .create = tmpfs_create,
     .lookup = tmpfs_lookup,
     .create_node = tmpfs_create_node,
+    .read = tmpfs_read,
+    .write = tmpfs_write,
 };
 
 struct tmpfs_inode {
@@ -96,6 +101,38 @@ int tmpfs_create(struct vnode *node, char *name, short flags) {
 
 	release(&node->lock);
 	return 0;
+}
+
+int tmpfs_read(struct vnode *node, char *buf, long n, long off) {
+	if (!S_ISREG(node->mode)) {
+		return -EINVAL;
+	}
+
+	struct tmpfs_inode *tnode = node->private_data;
+	long final_off = MIN(tnode->length, off + n);
+	long to_read = final_off - off;
+
+	memcpy(buf, tnode->data, to_read);
+	return to_read;
+}
+
+int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
+	if (!S_ISREG(node->mode)) {
+		return -EINVAL;
+	}
+
+	struct tmpfs_inode *tnode = node->private_data;
+	long new_length = MIN(tnode->length, off + n);
+
+	if (new_length < tnode->effective_length) {
+		char *new = vmalloc((new_length + 0xfff) & ~0xfff);
+		memcpy(new, tnode->data, tnode->length);
+		vfree(tnode->data);
+		tnode->data = new;
+	}
+
+	tnode->length = new_length;
+	return n;
 }
 
 int tmpfs_lookup(struct vnode *node, char *name, long *num) {

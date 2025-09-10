@@ -53,7 +53,7 @@ void vfs_init();
 void dentry_resolve(struct dentry *dentry, char *path);
 
 struct vnode_operations {
-	int (*open)(struct vnode *node, char *buf, long n);
+	int (*open)(struct vnode *node, short flags);
 	int (*read)(struct vnode *node, char *buf, long n, long off);
 	int (*write)(struct vnode *node, char *buf, long n, long off);
 	int (*ioctl)(struct vnode *node, int request, void *arg);
@@ -76,10 +76,16 @@ struct dirent {
 
 struct file {
 	struct dentry *entry;
+	long pos;
 	short flags;
 };
 
 void unpack_initrd();
 
+/**
+ * These helpers will trust what they are given, permissions, O_CREAT flag, etc.
+ * are to be handled in a higher level abstraction
+ */
 int vfs_mkdir(char *path, struct dentry *rel, short flags);
 int vfs_create(char *path, struct dentry *rel, short flags);
+int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd);

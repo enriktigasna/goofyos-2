@@ -84,6 +84,11 @@ int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
 	if (!dent || !res)
 		return -EINVAL;
 
+	if (!strcmp(name, ".")) {
+		*res = dent;
+		return 0;
+	}
+
 	struct dentry *ret;
 	size_t dkey_size = sizeof(struct dentry *) + strlen(name) + 1;
 	struct dcache_key *dkey = kmalloc(dkey_size);
@@ -129,16 +134,10 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 		kfree(dlist_back_pop(files));
 		printk("removed trailing child\n");
 	}
-	// Traverse dcache until can't
 
 	if (path[0] == '/') {
 		kfree(dlist_front_pop(files));
 		rel = global_root;
-	}
-
-	if (path[0] == '.') {
-		printk("removed leading .\n");
-		kfree(dlist_front_pop(files));
 	}
 
 	if (rel == NULL)
@@ -175,13 +174,6 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	*res = cur;
 	return 0;
 }
-// VA for dcache key
-//(files->head->value)
-
-// 1. Check dcache, if found pop and continue
-
-// 2. fs lookup (if nonexistant -EEXIST)
-// 3. node cache lookup ? create
 
 int vfs_mkdir(char *path, struct dentry *rel, short flags) {
 	struct dentry *parent;
@@ -227,6 +219,46 @@ int vfs_create(char *path, struct dentry *rel, short flags) {
 	}
 
 	return parent->vnode->ops->create(parent->vnode, child, flags);
+}
+
+int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd) {
+	struct dentry *file;
+	int err = vfs_find_dentry(path, &file, rel, false);
+	if (err)
+		return err;
+
+	fd->entry = file;
+	fd->flags = flags;
+	fd->pos = 0;
+	return 0;
+}
+
+int vfs_write(struct file *fd, char *buf, long n) {
+	struct vnode_operations *ops = fd->entry->vnode->ops;
+	if (!ops->write)
+		return -ENOSYS;
+	long res = ops->write(fd->entry->vnode, buf, n, fd->pos);
+
+	if (res > 0 && (S_ISREG(fd->entry->vnode->mode) ||
+			S_ISBLK(fd->entry->vnode->mode))) {
+		fd->pos += res;
+	}
+
+	return res;
+}
+
+int vfs_read(struct file *fd, char *buf, long n) {
+	struct vnode_operations *ops = fd->entry->vnode->ops;
+	if (!ops->read)
+		return -ENOSYS;
+	long res = ops->read(fd->entry->vnode, buf, n, fd->pos);
+
+	if (res > 0 && (S_ISREG(fd->entry->vnode->mode) ||
+			S_ISBLK(fd->entry->vnode->mode))) {
+		fd->pos += res;
+	}
+
+	return res;
 }
 
 void vfs_cache_dentry(struct dentry *ent) {
