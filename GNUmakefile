@@ -8,7 +8,7 @@ QEMUFLAGS := -m 2G -serial file:/dev/stdout
 override IMAGE_NAME := GoofyOS
 
 # Toolchain for building the 'limine' executable for the host.
-HOST_CC := cc
+HOST_CC := clang
 HOST_CFLAGS := -g -O2 -pipe
 HOST_CPPFLAGS :=
 HOST_LDFLAGS :=

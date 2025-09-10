@@ -67,8 +67,8 @@ void tss_init() {
 }
 
 void tss_percpu_init() {
-	__asm__ __volatile__("ltr %0" ::"r"((5 + current_cpuid() * 2) * 8)
-			     : "memory");
+	unsigned short selector = (5 + current_cpuid() * 2) * 8;
+	__asm__ __volatile__("ltr %0" ::"m"(selector) : "memory");
 }
 
 void cpu_init() {

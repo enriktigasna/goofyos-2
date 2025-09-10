@@ -77,13 +77,6 @@ void schedule(struct registers *regs) {
 	go_to_task(target);
 }
 
-void sched_idle() {
-	while (1) {
-		__asm__ __volatile__("sti");
-		__asm__ __volatile__("hlt");
-	}
-}
-
 /**
  *  Initializes the scheduler, adds an idle task to be jumped to when no tasks
  */

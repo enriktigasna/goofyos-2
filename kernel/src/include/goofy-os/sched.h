@@ -43,3 +43,4 @@ struct ktimer {
 };
 
 struct task *init_ktimer(struct ktimer *ktimer);
+void sched_idle();
