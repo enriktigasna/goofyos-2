@@ -76,14 +76,10 @@ void limine_init() {
         }
 
         // Ensure we got a framebuffer.
-        if (framebuffer_request.response == NULL) {
+        if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
                 NO_FRAMEBUFFER = true;
         }
 
-        if (framebuffer_request.response->framebuffer_count < 1) {
-                NO_FRAMEBUFFER = true;
-        }
-        
 	// Ensure we got memmap
 	if (memmap_request.response == NULL) {
                 hcf();

@@ -149,3 +149,9 @@ clean:
 distclean: clean
 	$(MAKE) -C kernel distclean
 	rm -rf kernel-deps limine ovmf
+
+.PHONY: analyze
+analyze: kernel-deps
+	rm -rf analyze-report
+	mkdir -p analyze-report
+	scan-build --status-bugs -o analyze-report $(MAKE) -C kernel

@@ -70,7 +70,7 @@ void dlist_kfree_values(struct dlist *dlist) {
 }
 
 void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
-	for (struct dnode *curr = dlist->head; curr; curr->next) {
+	for (struct dnode *curr = dlist->head; curr; curr = curr->next) {
 		destructor(curr->value);
 		kfree(curr->value);
 	}

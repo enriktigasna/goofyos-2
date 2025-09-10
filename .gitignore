@@ -5,3 +5,4 @@
 *.iso
 *.hdd
 /initrd
+/analyze-report

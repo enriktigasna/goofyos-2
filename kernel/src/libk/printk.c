@@ -198,7 +198,6 @@ int printk(const char *fmt, ...) {
 
 	va_list args;
 	int printed;
-	uint64_t time_since_boot = hpet_us_since_boot();
 	sprintf(printf_buf, "[%5d.%7d] ", hpet_us_since_boot() / 1000000,
 		hpet_us_since_boot() % 1000000);
 
