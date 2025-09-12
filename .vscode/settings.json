@@ -89,7 +89,11 @@
 		"vfs.h": "c",
 		"errno.h": "c",
 		"stat.h": "c",
-		"hmap.h": "c"
+		"hmap.h": "c",
+		"binfmt.h": "c",
+		"types.h": "c",
+		"elf-em.h": "c",
+		"elf.h": "c"
 	},
 	"C_Cpp.default.defines": [
 		"LIMINE_API_REVISION=3",

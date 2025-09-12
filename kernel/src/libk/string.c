@@ -11,9 +11,22 @@ void *memcpy(void *dest, const void *src, size_t count) {
 }
 
 void *memset(void *dest, int c, size_t count) {
-	uint8_t *tmp = dest;
+	uint8_t *b_ptr = dest;
+	uint64_t *q_ptr = dest;
+
+	uint64_t pattern;
+	pattern = (uint8_t)c;
+	pattern |= pattern << 8;
+	pattern |= pattern << 16;
+	pattern |= pattern << 32;
+
+	while (count >= 8) {
+		*q_ptr++ = pattern;
+		count -= 8;
+	}
+
 	while (count--)
-		*tmp++ = (uint8_t)c;
+		*b_ptr++ = (uint8_t)c;
 
 	return dest;
 }

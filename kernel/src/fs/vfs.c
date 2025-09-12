@@ -244,12 +244,18 @@ int vfs_write(struct file *fd, char *buf, long n) {
 	return res;
 }
 
-int vfs_read(struct file *fd, char *buf, long n) {
+int vfs_pread(struct file *fd, char *buf, long n, long pos) {
 	printk("vfs_read(%s, %d)\n", fd->entry->name, n);
 	struct vnode_operations *ops = fd->entry->vnode->ops;
 	if (!ops->read)
 		return -ENOSYS;
 	long res = ops->read(fd->entry->vnode, buf, n, fd->pos);
+
+	return res;
+}
+
+int vfs_read(struct file *fd, char *buf, long n) {
+	int res = vfs_pread(fd, buf, n, fd->pos);
 
 	if (res > 0 && (S_ISREG(fd->entry->vnode->mode) ||
 			S_ISBLK(fd->entry->vnode->mode))) {
@@ -258,6 +264,8 @@ int vfs_read(struct file *fd, char *buf, long n) {
 
 	return res;
 }
+
+long vfs_size(struct file *fd) { return fd->entry->vnode->size; }
 
 void vfs_cache_dentry(struct dentry *ent) {
 	size_t size = sizeof(struct dentry *) + strlen(ent->name) + 1;

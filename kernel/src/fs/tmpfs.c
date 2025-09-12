@@ -141,6 +141,7 @@ int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
 	memcpy(&tnode->data[off], buf, n);
 
 	tnode->length = new_length;
+	node->size = tnode->length;
 	return n;
 }
 
@@ -177,9 +178,9 @@ int tmpfs_create_node(struct vnode *node, long num, struct vnode **res) {
 	new_node->mode = tnode->mode;
 	new_node->private_data = tnode;
 	new_node->refcount = 1;
+	new_node->size = tnode->length;
 
 	*res = new_node;
-
 	return 0;
 }
 

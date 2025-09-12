@@ -1,13 +1,11 @@
+#include <goofy-os/binfmt.h>
 #include <goofy-os/boot.h>
 #include <goofy-os/cmdline.h>
 #include <goofy-os/cpu.h>
 #include <goofy-os/fbcon.h>
 #include <goofy-os/hcf.h>
-#include <goofy-os/mm.h>
 #include <goofy-os/printk.h>
 #include <goofy-os/slab.h>
-#include <goofy-os/time.h>
-#include <goofy-os/uapi/stat.h>
 #include <goofy-os/vfs.h>
 #include <goofy-os/vmalloc.h>
 #include <limine.h>
@@ -28,13 +26,14 @@ void schedule_bsp() {
 	go_to_task(&idle_task);
 }
 
-void print_dirents(struct vnode *node) {
-	struct dlist list;
-	int res = node->ops->getdirents(node, &list);
-	printk("Responeded with %d\n", res);
-	for (struct dnode *curr = list.head; curr; curr = curr->next) {
-		printk("%s\n", ((struct dirent *)curr->value)->name);
+void run_init() {
+	struct file *init = kzalloc(sizeof(struct file));
+	if (vfs_open("/sbin/init", NULL, 0, init) != 0) {
+		printk("[!] Failed to start init!\n");
+		hcf();
 	}
+
+	exec_file(init);
 }
 
 void kmain() {
@@ -55,5 +54,6 @@ void kmain() {
 		unpack_initrd();
 	}
 
+	run_init();
 	schedule_bsp();
 }

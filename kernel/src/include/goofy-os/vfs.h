@@ -15,6 +15,7 @@ struct vnode {
 	short mode;
 	bool inuse;
 	long number;
+	long size;
 };
 
 struct vfs {
@@ -90,5 +91,7 @@ int vfs_mkdir(char *path, struct dentry *rel, short flags);
 int vfs_create(char *path, struct dentry *rel, short flags);
 int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd);
 int vfs_write(struct file *fd, char *buf, long n);
+int vfs_pread(struct file *fd, char *buf, long n, long pos);
 int vfs_read(struct file *fd, char *buf, long n);
 int vfs_close(struct file *fd);
+long vfs_size(struct file *fd);
