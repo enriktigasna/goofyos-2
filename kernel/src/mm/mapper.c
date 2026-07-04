@@ -1,3 +1,4 @@
+#include <goofy-os/bump_alloc.h>
 #include <goofy-os/cpu.h>
 #include <goofy-os/hcf.h>
 #include <goofy-os/mm.h>
@@ -6,13 +7,19 @@
 #include <stdint.h>
 #include <string.h>
 
+struct page_table kernel_virtual_pt;
+
+// Changes to zpgalloc when we initialize the page allocator
+// We need mapper to work before we do that
+void *(*mapper_alloc_zpage)() = bump_zpage;
+
 uint64_t get_index(int level, void *addr) {
 	return (uint64_t)addr >> (12 + 9 * level) & 0x1ff;
 }
 
 struct page_table *new_page_table() {
 	uint64_t *pg = zpgalloc();
-	memcpy(pg, kernel_virtual_pt->cr3, 0x1000);
+	memcpy(pg, kernel_virtual_pt.cr3, 0x1000);
 
 	struct page_table *pt = kmalloc(sizeof(struct page_table));
 	pt->cr3 = pg;
@@ -40,7 +47,7 @@ void map_page(struct page_table *pt, uint64_t phys, void *virt,
 		if (*table & PG_PRESENT) {
 			value &= 0x7ffffffffffff000;
 		} else {
-			value = (uint64_t)zpgalloc() - hhdm_offset;
+			value = (uint64_t)mapper_alloc_zpage() - hhdm_offset;
 			*table = value | PG_PRESENT | PG_WRITE;
 		}
 
@@ -123,7 +130,7 @@ uint64_t __virt_offset(int level, void *virt) {
 	return (uint64_t)virt & (page_size - 1);
 }
 
-uint64_t virt_to_phys(void *virt) {
+int virt_to_pfn(void *virt) {
 	uint64_t *pt = (uint64_t *)__va(__readcr3());
 
 	int level = 3;
@@ -147,27 +154,27 @@ uint64_t virt_to_phys(void *virt) {
 		table = (uint64_t *)__va(value) + get_index(level, virt);
 	}
 
-	return (*table & 0x7ffffffffffff000) + __virt_offset(level, virt);
+	return ((*table & 0x7ffffffffffff000) + __virt_offset(level, virt)) >>
+	       12;
 }
-
-struct page_table *kernel_virtual_pt;
 
 // All contexts can after this copy from kernel_virtual_pt and will be up to
 // date with higher half mappings
+
+// In future can do something like flipping in a reasonable way
 void kernel_top_pgt_init() {
-	kernel_virtual_pt = zpgalloc();
 	uint64_t *cr3 = (void *)(__readcr3() + hhdm_offset);
 	for (int i = 0x100; i < 0x200; i++) {
 		if (cr3[i]) {
 			continue;
 		}
 
-		cr3[i] = ((uint64_t)zpgalloc() - hhdm_offset) | PG_PRESENT |
+		cr3[i] = ((uint64_t)bump_zpage() - hhdm_offset) | PG_PRESENT |
 			 PG_WRITE;
 	}
 
-	kernel_virtual_pt->cr3 = pgalloc();
-	memcpy(kernel_virtual_pt->cr3, cr3, 0x1000);
+	kernel_virtual_pt.cr3 = bump_page();
+	memcpy(kernel_virtual_pt.cr3, cr3, 0x1000);
 
-	printk("Virtual pt %p\n", kernel_virtual_pt);
+	printk("Virtual pt %p\n", &kernel_virtual_pt);
 }

@@ -39,7 +39,15 @@ void run_init() {
 void kmain() {
 	limine_init();
 	serial_init();
+
+	init_gdt();
+	init_idt();
+
 	mm_init();
+	for (;;) {
+	}
+
+	/**
 	console_init(__limine_framebuffer);
 	parse_cmdline();
 	init_gdt();
@@ -56,4 +64,5 @@ void kmain() {
 
 	run_init();
 	schedule_bsp();
+	*/
 }

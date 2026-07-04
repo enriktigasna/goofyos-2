@@ -3,6 +3,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
+void list_add_front(struct list_head *head, struct list_head *needle) {
+	if (head)
+		head->prev = needle;
+	needle->next = head;
+}
+
+void list_remove_node(struct list_head *needle) {
+	if (needle->next)
+		needle->next->prev = needle->prev;
+	if (needle->prev)
+		needle->prev->next = needle->next;
+	needle->next = NULL;
+	needle->prev = NULL;
+}
+
 void dlist_front_push(struct dlist *stack, void *value) {
 	struct dnode *new = kzalloc(sizeof(struct dnode));
 	new->value = value;

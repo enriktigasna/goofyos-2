@@ -8,6 +8,14 @@ struct dnode {
 	struct dnode *prev;
 };
 
+struct list_head {
+	struct list_head *next;
+	struct list_head *prev;
+};
+
+void list_add_front(struct list_head *head, struct list_head *needle);
+void list_remove_node(struct list_head *needle);
+
 /**
  * Double ended queue
  * Can be used as a queue, stack, list

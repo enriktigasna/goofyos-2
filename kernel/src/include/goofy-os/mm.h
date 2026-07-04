@@ -1,8 +1,13 @@
 #pragma once
 
+#include <goofy-os/list.h>
 #include <goofy-os/spinlock.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+#define MAX_ORDER 15
+#define N_ORDERS MAX_ORDER + 1
+#define MAX_BUDDY_ZONES 0x20
 
 #define MM_MAX_MEMORY_REGIONS 0x20
 #define __va(phys) ((uint64_t)phys + hhdm_offset)
@@ -17,6 +22,10 @@
 
 #define PG_FLAGMASK (PG_PRESENT | PG_WRITE | PG_USER | PG_NX | PG_PS)
 
+#define PAGE_SIZE 4096
+
+#define PAGE_FLAG_FREE 1
+
 struct mm_memmap_region {
 	uint64_t base;
 	uint64_t size;
@@ -27,18 +36,24 @@ struct page_table {
 	struct spinlock lock;
 };
 
+struct page_directory {
+	uint64_t *pd;
+	struct spinlock lock;
+};
+
 struct kmem_struct {
 	struct spinlock lock;
 };
 
 extern int mm_region_count;
 extern struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
-extern bool pgalloc_initialized;
+extern bool buddy_initialized;
 extern uint64_t hhdm_offset;
-extern struct page_table *kernel_virtual_pt;
+extern struct page_table kernel_virtual_pt;
+extern void *(*mapper_alloc_zpage)();
 
 void mm_init();
-void pgalloc_init();
+void buddy_init();
 void *pgalloc();
 void *zpgalloc();
 void pgfree(void *page);
@@ -48,13 +63,24 @@ void unmap_page(struct page_table *pt, void *virt);
 void kernel_top_pgt_init();
 void sparse_init();
 bool is_mapped(struct page_table *pt, void *virt);
-uint64_t virt_to_phys(void *virt);
+int virt_to_pfn(void *virt);
+void *pfn_to_virt(int pfn);
 
 struct page {
 	union {
 		struct {
-			uint64_t flags;
-			struct slab *slab;
+			unsigned long flags;
+			union {
+				struct {
+					// page owned by a slab
+					struct slab *slab;
+				};
+				struct {
+					// buddy free page
+					struct list_head buddy_list;
+					long buddy_order;
+				};
+			};
 		};
 		uint64_t padding[8];
 	};

@@ -26,7 +26,6 @@ void *fill_page_freelist(size_t size, void *page) {
 		*(void **)(page + i * size) = next;
 		next = (void *)(page + i * size);
 	}
-
 	return next;
 }
 
@@ -261,6 +260,7 @@ void *kzalloc(size_t size) {
 // kmem_cache_alloc(slab_jar)
 struct slab *alloc_slab_struct() {}
 
+// TODO: Normal slab, where it can have 4096, multiple pages per slab, etc.
 void slab_init() {
 	slab_jar_bootstrap();
 	for (int i = 0; i < SLAB_COUNT; i++) {

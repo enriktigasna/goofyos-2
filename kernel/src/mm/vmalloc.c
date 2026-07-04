@@ -61,11 +61,11 @@ void vmalloc_unmap_range(void *range) {
 void _vrelease_pages(size_t count, void *virt) {
 	for (int i = 0; i < count; i++) {
 		void *curr_virt = virt + i * PAGE_SIZE;
-		uint64_t curr_phys = virt_to_phys(curr_virt);
+		uint64_t curr_phys = ((uint64_t)virt_to_pfn(curr_virt)) << 12;
 
 		void *hhdm_virt = (void *)curr_phys + hhdm_offset;
 		pgfree(hhdm_virt);
-		unmap_page(kernel_virtual_pt, curr_virt);
+		unmap_page(&kernel_virtual_pt, curr_virt);
 	}
 }
 
@@ -94,7 +94,7 @@ void *_vmalloc(size_t size, uint64_t flags) {
 
 	for (int i = 0; i < aligned_size / PAGE_SIZE; i++) {
 		uint64_t phys = (uint64_t)pgalloc() - hhdm_offset;
-		map_page(kernel_virtual_pt, phys, addr + PAGE_SIZE * i, flags);
+		map_page(&kernel_virtual_pt, phys, addr + PAGE_SIZE * i, flags);
 	}
 
 	return addr;
@@ -140,7 +140,7 @@ void *vmap_contiguous(uint64_t phys_addr, size_t size) {
 	void *range = _vmalloc(page_count * PAGE_SIZE, PG_WRITE | PG_NX);
 
 	for (int i = 0; i < page_count; i++) {
-		map_page(kernel_virtual_pt, aligned_addr + i * PAGE_SIZE,
+		map_page(&kernel_virtual_pt, aligned_addr + i * PAGE_SIZE,
 			 range + i * PAGE_SIZE, PG_WRITE | PG_NX);
 	}
 

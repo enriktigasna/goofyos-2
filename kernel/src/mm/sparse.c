@@ -1,5 +1,7 @@
+#include <goofy-os/bump_alloc.h>
 #include <goofy-os/cpu.h>
 #include <goofy-os/mm.h>
+#include <goofy-os/printk.h>
 #include <stddef.h>
 
 #define STRUCTS_PER_PAGE (0x1000 / sizeof(struct page))
@@ -13,7 +15,7 @@ void __map_region_struct(struct mm_memmap_region *region,
 		struct page *ptr = &sparsemap_array[curr >> 12];
 		uint64_t aligned = (uint64_t)ptr & ~0xfff;
 
-		uint64_t page = (uint64_t)zpgalloc() - hhdm_offset;
+		uint64_t page = (uint64_t)bump_zpage() - hhdm_offset;
 		map_page(pt, page, (void *)aligned, PG_NX | PG_WRITE);
 		curr += 0x1000 * STRUCTS_PER_PAGE;
 	}
@@ -21,9 +23,11 @@ void __map_region_struct(struct mm_memmap_region *region,
 
 void sparse_init() {
 	// Map in all the pages that should contain struct page
-	struct page_table *pt = kernel_virtual_pt;
+	struct page_table *pt = &kernel_virtual_pt;
 
 	for (int i = 0; i < mm_region_count; i++) {
 		__map_region_struct(&mm_phys_regions[i], pt);
+		printk("mapped region %d of size %p\n", i,
+		       mm_phys_regions[i].size);
 	}
 }
