@@ -114,7 +114,7 @@ struct page *alloc_pages_nolock(int order, int flags) {
 
 	pfn = ret - sparsemap_array;
 	int pfn_buddy = GET_BUDDY(pfn, order);
-	free_pages(&sparsemap_array[pfn_buddy], order);
+	free_pages_nolock(&sparsemap_array[pfn_buddy], order);
 	ret->flags &= ~PAGE_FLAG_FREE;
 
 	return ret;
@@ -182,10 +182,11 @@ void buddy_init() {
 
 	buddy_initialized = true;
 	mapper_alloc_zpage = pgzalloc;
-	for (int i = 0; i < N_ORDERS; i++) {
-		struct list_head *cur = buddy_lists[i].head;
-		for (int j = 0; j < buddy_lists[i].count; j++) {
-			cur = cur->next;
-		}
-	}
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
+	printk("o0 %p\n", alloc_pages(0, 0));
 }
