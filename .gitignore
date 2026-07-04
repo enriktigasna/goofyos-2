@@ -6,3 +6,4 @@
 *.hdd
 /initrd
 /analyze-report
+.gdb_history
