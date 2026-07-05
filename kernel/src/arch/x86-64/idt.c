@@ -27,6 +27,18 @@ void init_idt() {
 	set_idt(&idt_register);
 	for (int i = 0; i < 0x20; i++) {
 		__idt_set_entry(i, (uint64_t)(&isr_vector_0_handler) + i * 16,
+				0x8E, 0);
+	}
+
+	for (int i = 0x20; i < 256; i++) {
+		__idt_set_entry(i, (uint64_t)(&isr_vector_0_handler) + i * 16,
+				0x8E, 0);
+	}
+}
+
+void init_idt_with_stack_table() {
+	for (int i = 0; i < 0x20; i++) {
+		__idt_set_entry(i, (uint64_t)(&isr_vector_0_handler) + i * 16,
 				0x8E, 1);
 	}
 

@@ -13,8 +13,9 @@ struct list_head {
 	struct list_head *prev;
 };
 
-void list_add_front(struct list_head *head, struct list_head *needle);
-void list_remove_node(struct list_head *needle);
+struct list_head *list_pop_front(struct list_head **head);
+void list_add_front(struct list_head **head, struct list_head *needle);
+void list_remove_node(struct list_head **head, struct list_head *needle);
 
 /**
  * Double ended queue

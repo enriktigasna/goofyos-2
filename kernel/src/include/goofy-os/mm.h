@@ -14,6 +14,15 @@
 #define __hhdm_to_page(addr)                                                   \
 	&sparsemap_array[((uint64_t)(addr) - hhdm_offset) >> 12]
 
+#define page_to_pfn(_page) ((struct page *)(_page) - sparsemap_array)
+#define page_to_virt(page) (pfn_to_virt(page_to_pfn(page)))
+#define pfn_to_page(pfn) (&sparsemap_array[pfn])
+
+// If a chunk is for example of order 3, we can find the first page in this
+// chunk, because it will be aligned to (1 << 3) = 8
+#define base_pfn(pfn, order) ((pfn) & ~((1 << (order)) - 1))
+#define base_page(page, order) (pfn_to_page(base_pfn(page_to_pfn(page), order)))
+
 #define PG_PRESENT (0x1ULL << 0)
 #define PG_WRITE (1ULL << 1)
 #define PG_USER (1ULL << 2)
@@ -64,7 +73,7 @@ void kernel_top_pgt_init();
 void sparse_init();
 bool is_mapped(struct page_table *pt, void *virt);
 int virt_to_pfn(void *virt);
-void *pfn_to_virt(int pfn);
+void *pfn_to_virt(unsigned long pfn);
 
 struct page {
 	union {
@@ -74,6 +83,11 @@ struct page {
 				struct {
 					// page owned by a slab
 					struct slab *slab;
+				};
+				struct {
+					// page owned by mempool
+					struct mempool *mempool;
+					unsigned int n_free;
 				};
 				struct {
 					// buddy free page

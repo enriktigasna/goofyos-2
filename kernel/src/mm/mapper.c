@@ -35,7 +35,7 @@ void map_page(struct page_table *pt, uint64_t phys, void *virt,
 	if (flags & ~PG_FLAGMASK) {
 		printk("Flagmask is %p you gave it %p\n", PG_FLAGMASK, flags);
 		printk("%p\n", flags & ~PG_FLAGMASK);
-		hcf(); // You fucked up
+		hcf();
 	}
 
 	int level = 3;

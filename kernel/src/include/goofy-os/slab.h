@@ -1,11 +1,13 @@
 #pragma once
+#include <goofy-os/list.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define SLAB_COUNT 9
+#define SLAB_COUNT 12
 #define SLAB_MAX_EMPTY 2
-#define SLAB_PREALLOC_PAGES 2
+#define SLAB_PREALLOC_SLABS 2
 #define kmalloc_size(sz) (kmalloc_sizes[kmalloc_idx(sz)])
+#define kmalloc_order(sz) (kmalloc_orders[kmalloc_idx(sz)])
 #define PAGE_SIZE 4096
 
 #define SLAB_STATIC (1 << 0)
@@ -22,6 +24,7 @@
 
 struct kmem_cache {
 	size_t size;
+	int order;
 
 	struct slab *slab_full;
 	struct slab *slab_partial;
@@ -37,8 +40,7 @@ struct kmem_cache {
 struct slab {
 	struct kmem_cache *cache;
 
-	struct slab *next;
-	struct slab *prev;
+	struct list_head slab_list;
 
 	void *freelist;
 	int free_objects;
@@ -53,10 +55,13 @@ size_t kmalloc_idx(size_t size) {
 	if (size <=   32) return 2;
 	if (size <=   64) return 3;
 	if (size <=  128) return 4;
-	if (size <=  256) return 5;
-	if (size <=  512) return 6;
-	if (size <= 1024) return 7;
-	if (size <= 2048) return 8;
+	if (size <=  192) return 5;
+	if (size <=  256) return 6;
+	if (size <=  512) return 7;
+	if (size <= 1024) return 8;
+	if (size <= 2048) return 9;
+	if (size <= 4096) return 10;
+	if (size <= 8192) return 11;
 	return size; // You fucked up
 }
 // clang-format on

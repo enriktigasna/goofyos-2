@@ -14,7 +14,9 @@
  * Used to bootstrap memory management
  */
 
-void *pfn_to_virt(int pfn) { return (void *)((pfn << 12) + hhdm_offset); }
+void *pfn_to_virt(unsigned long pfn) {
+	return (void *)((((long)pfn) << 12) + hhdm_offset);
+}
 
 struct kmem_struct kmem;
 
@@ -24,7 +26,7 @@ struct buddy_freelist {
 };
 
 struct buddy_zone {
-	unsigned int pfn_base;
+	unsigned long pfn_base;
 	unsigned int size;
 };
 
@@ -34,7 +36,7 @@ struct buddy_zone buddy_zones[MAX_BUDDY_ZONES];
 bool buddy_initialized = false;
 struct pgalloc_chunk *pgalloc_head;
 
-bool valid_buddy_pfn(int pfn) {
+bool valid_buddy_pfn(unsigned long pfn) {
 	for (int i = 0; i < MAX_BUDDY_ZONES; i++) {
 		if (buddy_zones[i].pfn_base <= pfn &&
 		    (buddy_zones[i].pfn_base + buddy_zones[i].size) > pfn)
@@ -45,17 +47,17 @@ bool valid_buddy_pfn(int pfn) {
 
 // Remove a page from it's freelist
 void remove_from_freelist(struct page *page) {
-	if (buddy_lists[page->buddy_order].head == &page->buddy_list)
-		buddy_lists[page->buddy_order].head = page->buddy_list.next;
-	list_remove_node(&page->buddy_list);
+	list_remove_node(&buddy_lists[page->buddy_order].head,
+			 &page->buddy_list);
+
 	buddy_lists[page->buddy_order].count--;
 	page->flags &= ~PAGE_FLAG_FREE;
 }
 
 void free_pages_nolock(struct page *page, int order) {
-	int pfn = page - sparsemap_array;
-	int buddy_pfn = GET_BUDDY(pfn, order);
-	struct page *buddy_page = &sparsemap_array[buddy_pfn];
+	unsigned long pfn = page_to_pfn(page);
+	unsigned int buddy_pfn = GET_BUDDY(pfn, order);
+	struct page *buddy_page = pfn_to_page(buddy_pfn);
 
 	// Is it valid?
 	if (!valid_buddy_pfn(buddy_pfn))
@@ -79,13 +81,12 @@ void free_pages_nolock(struct page *page, int order) {
 direct_free:
 	page->buddy_order = order;
 	page->flags |= PAGE_FLAG_FREE;
-	list_add_front(buddy_lists[order].head, &page->buddy_list);
-	buddy_lists[order].head = &page->buddy_list;
-	// printk("order is %d head is %p\n", order, &page->buddy_list);
+	list_add_front(&buddy_lists[order].head, &page->buddy_list);
 	buddy_lists[order].count++;
 }
 
 void free_pages(struct page *page, int order) {
+
 	acquire(&kmem.lock);
 	free_pages_nolock(page, order);
 	release(&kmem.lock);
@@ -94,14 +95,15 @@ void free_pages(struct page *page, int order) {
 void free_page(struct page *page) { free_pages(page, 0); }
 
 struct page *alloc_pages_nolock(int order, int flags) {
-	int pfn;
+	long pfn;
 	struct page *ret;
 	// First check for same order freelist
 
 	if (buddy_lists[order].count > 0) {
-		ret = container_of(buddy_lists[order].head, struct page,
-				   buddy_list);
+		ret = container_of(list_pop_front(&buddy_lists[order].head),
+				   struct page, buddy_list);
 		buddy_lists[order].head = buddy_lists[order].head->next;
+
 		buddy_lists[order].count--;
 		return ret;
 	}
@@ -112,9 +114,9 @@ struct page *alloc_pages_nolock(int order, int flags) {
 	if (ret == NULL)
 		return NULL;
 
-	pfn = ret - sparsemap_array;
-	int pfn_buddy = GET_BUDDY(pfn, order);
-	free_pages_nolock(&sparsemap_array[pfn_buddy], order);
+	pfn = page_to_pfn(ret);
+	long pfn_buddy = GET_BUDDY(pfn, order);
+	free_pages_nolock(pfn_to_page(pfn_buddy), order);
 	ret->flags &= ~PAGE_FLAG_FREE;
 
 	return ret;
@@ -127,8 +129,7 @@ struct page *alloc_pages(int order, int flags) {
 	release(&kmem.lock);
 
 	if (flags & BUDDY_ZERO)
-		memset(pfn_to_virt(ret - sparsemap_array), 0,
-		       PAGE_SIZE << order);
+		memset(page_to_virt(ret), 0, PAGE_SIZE << order);
 
 	return ret;
 }
@@ -137,19 +138,17 @@ struct page *alloc_page() { return alloc_pages(0, 0); }
 
 void *pgalloc() {
 	struct page *page = alloc_pages(0, 0);
-	return pfn_to_virt(page - sparsemap_array);
+	return page_to_virt(page);
 }
 
 void *pgzalloc() {
 	struct page *page = alloc_pages(0, BUDDY_ZERO);
-	void *virt = pfn_to_virt(page - sparsemap_array);
+	void *virt = page_to_virt(page);
 	return virt;
 }
 
-struct page *pgalloc_phys() { return __hhdm_to_page(pgalloc()); }
-
 void pgfree(void *page) {
-	struct page *_page = &sparsemap_array[virt_to_pfn(page)];
+	struct page *_page = __hhdm_to_page(page);
 	free_page(_page);
 }
 
@@ -173,8 +172,8 @@ void buddy_init() {
 				continue;
 			}
 
-			int pfn = buddy_zones[zone_idx].pfn_base + i;
-			free_page(&sparsemap_array[pfn]);
+			long pfn = buddy_zones[zone_idx].pfn_base + i;
+			free_page(pfn_to_page(pfn));
 
 			page_idx++;
 		}
@@ -182,11 +181,4 @@ void buddy_init() {
 
 	buddy_initialized = true;
 	mapper_alloc_zpage = pgzalloc;
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
-	printk("o0 %p\n", alloc_pages(0, 0));
 }

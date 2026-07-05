@@ -3,13 +3,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void list_add_front(struct list_head *head, struct list_head *needle) {
-	if (head)
-		head->prev = needle;
-	needle->next = head;
+struct list_head *list_pop_front(struct list_head **head) {
+	struct list_head *ret = *head;
+	*head = (*head)->next;
+	return ret;
 }
 
-void list_remove_node(struct list_head *needle) {
+void list_add_front(struct list_head **head, struct list_head *needle) {
+	if (*head)
+		(*head)->prev = needle;
+	needle->next = *head;
+	*head = needle;
+}
+
+void list_remove_node(struct list_head **head, struct list_head *needle) {
+	// If head is needle, then make it not.
+	if (*head == needle)
+		(*head) = (*head)->next;
+
 	if (needle->next)
 		needle->next->prev = needle->prev;
 	if (needle->prev)
