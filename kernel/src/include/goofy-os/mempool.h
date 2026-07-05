@@ -14,4 +14,5 @@ struct mempool {
 void mempool_init(struct mempool *mempool, unsigned int size,
 		  unsigned int order);
 void *mempool_alloc(struct mempool *mempool);
+void *mempool_zalloc(struct mempool *mempool);
 void mempool_free(struct mempool *mempool, void *chunk);

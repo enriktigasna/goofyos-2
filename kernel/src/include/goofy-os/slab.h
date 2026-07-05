@@ -1,11 +1,11 @@
 #pragma once
 #include <goofy-os/list.h>
+#include <goofy-os/spinlock.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #define SLAB_COUNT 12
-#define SLAB_MAX_EMPTY 2
-#define SLAB_PREALLOC_SLABS 2
+#define SLAB_MAX_EMPTY 1
 #define kmalloc_size(sz) (kmalloc_sizes[kmalloc_idx(sz)])
 #define kmalloc_order(sz) (kmalloc_orders[kmalloc_idx(sz)])
 #define PAGE_SIZE 4096
@@ -26,9 +26,11 @@ struct kmem_cache {
 	size_t size;
 	int order;
 
-	struct slab *slab_full;
-	struct slab *slab_partial;
-	struct slab *slab_empty;
+	struct spinlock cache_lock;
+
+	struct list_head *slab_full;
+	struct list_head *slab_partial;
+	struct list_head *slab_empty;
 
 	int n_full;
 	int n_partial;
@@ -42,9 +44,8 @@ struct slab {
 
 	struct list_head slab_list;
 
-	void *freelist;
+	struct single_list_head *freelist;
 	int free_objects;
-	int flags;
 };
 
 // clang-format off

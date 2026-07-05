@@ -81,7 +81,7 @@ void free_pages_nolock(struct page *page, int order) {
 direct_free:
 	page->buddy_order = order;
 	page->flags |= PAGE_FLAG_FREE;
-	list_add_front(&buddy_lists[order].head, &page->buddy_list);
+	list_push_front(&buddy_lists[order].head, &page->buddy_list);
 	buddy_lists[order].count++;
 }
 

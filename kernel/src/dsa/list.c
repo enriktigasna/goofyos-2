@@ -9,7 +9,7 @@ struct list_head *list_pop_front(struct list_head **head) {
 	return ret;
 }
 
-void list_add_front(struct list_head **head, struct list_head *needle) {
+void list_push_front(struct list_head **head, struct list_head *needle) {
 	if (*head)
 		(*head)->prev = needle;
 	needle->next = *head;
@@ -27,6 +27,18 @@ void list_remove_node(struct list_head **head, struct list_head *needle) {
 		needle->prev->next = needle->next;
 	needle->next = NULL;
 	needle->prev = NULL;
+}
+
+struct single_list_head *slist_pop_front(struct single_list_head **head) {
+	struct single_list_head *ret = *head;
+	*head = (*head)->next;
+	return ret;
+}
+
+void slist_push_front(struct single_list_head **head,
+		      struct single_list_head *needle) {
+	needle->next = *head;
+	*head = needle;
 }
 
 void dlist_front_push(struct dlist *stack, void *value) {
