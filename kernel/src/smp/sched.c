@@ -9,7 +9,8 @@
 struct task idle_task;
 struct scheduler scheduler;
 
-void preempt_enable() {
+void preempt_enable()
+{
 	if (cpu_cores[current_cpuid()].preempt_count)
 		cpu_cores[current_cpuid()].preempt_count--;
 }
@@ -19,12 +20,14 @@ void preempt_disable() { cpu_cores[current_cpuid()].preempt_count++; }
 /**
  * Not to be called from user context, as it won't reschedule current task
  */
-void go_to_task(struct task *task) {
+void go_to_task(struct task *task)
+{
 	cpu_cores[current_cpuid()].current_task = task;
 	return_to_ctx(task->regs, (uint64_t)task->pt->cr3 - hhdm_offset);
 }
 
-void _sched_task(struct task *task) {
+void _sched_task(struct task *task)
+{
 	if (task == &idle_task || !task) {
 		return;
 	}
@@ -39,13 +42,15 @@ void _sched_task(struct task *task) {
 		scheduler.tail = task;
 }
 
-void sched_task(struct task *task) {
+void sched_task(struct task *task)
+{
 	acquire(&scheduler.lock);
 	_sched_task(task);
 	release(&scheduler.lock);
 }
 
-struct task *pop_task() {
+struct task *pop_task()
+{
 	struct task *ret = scheduler.tail;
 	if (!ret) {
 		return &idle_task;
@@ -60,7 +65,8 @@ struct task *pop_task() {
 	return ret;
 }
 
-void save_task(struct registers *regs) {
+void save_task(struct registers *regs)
+{
 	if (!cpu_cores[current_cpuid()].current_task) {
 		return;
 	}
@@ -68,7 +74,8 @@ void save_task(struct registers *regs) {
 	       sizeof(struct registers));
 }
 
-void schedule(struct registers *regs) {
+void schedule(struct registers *regs)
+{
 	acquire(&scheduler.lock);
 	save_task(regs);
 	_sched_task(cpu_cores[current_cpuid()].current_task);
@@ -80,7 +87,8 @@ void schedule(struct registers *regs) {
 /**
  *  Initializes the scheduler, adds an idle task to be jumped to when no tasks
  */
-void sched_init() {
+void sched_init()
+{
 	idle_task.regs = kzalloc(sizeof(struct registers));
 	idle_task.regs->rip = (uint64_t)&sched_idle;
 	idle_task.regs->cs = KERNEL_CS;

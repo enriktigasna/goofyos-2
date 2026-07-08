@@ -13,7 +13,8 @@ struct hashmap vnode_cache;
 struct dentry *global_root;
 
 extern int tmpfs_mount(struct dentry *dentry, struct vfs *vfs);
-void dentry_resolve(struct dentry *dentry, char *path) {
+void dentry_resolve(struct dentry *dentry, char *path)
+{
 	struct dlist stack;
 	memset(&stack, 0, sizeof(struct dlist));
 
@@ -31,7 +32,8 @@ void dentry_resolve(struct dentry *dentry, char *path) {
 	}
 }
 
-struct dlist *vfs_parse_path(char *path) {
+struct dlist *vfs_parse_path(char *path)
+{
 	struct dlist *ret = kzalloc(sizeof(struct dlist));
 	char buf[VFS_PATH_MAX];
 	if (path[0] == '/') {
@@ -57,7 +59,8 @@ struct dlist *vfs_parse_path(char *path) {
 	return ret;
 }
 
-int vfs_find_vnode(struct vnode *vnode, long num, struct vnode **res) {
+int vfs_find_vnode(struct vnode *vnode, long num, struct vnode **res)
+{
 	if (!vnode || !res || !vnode->ops || !vnode->curr_vfs)
 		return EINVAL;
 
@@ -79,7 +82,8 @@ SUCCESS:
 	return 0;
 }
 
-int vfs_find_child(struct dentry *dent, char *name, struct dentry **res) {
+int vfs_find_child(struct dentry *dent, char *name, struct dentry **res)
+{
 	if (!dent || !res)
 		return -EINVAL;
 
@@ -120,7 +124,8 @@ SUCCESS:
 }
 
 int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
-		    bool parent) {
+		    bool parent)
+{
 	struct dlist *files = vfs_parse_path(path);
 
 	if (!files->count || (files->count == 1 && parent)) {
@@ -167,7 +172,8 @@ int vfs_find_dentry(char *path, struct dentry **res, struct dentry *rel,
 	return 0;
 }
 
-int vfs_mkdir(char *path, struct dentry *rel, short flags) {
+int vfs_mkdir(char *path, struct dentry *rel, short flags)
+{
 	struct dentry *parent;
 	int err = vfs_find_dentry(path, &parent, rel, true);
 	if (err)
@@ -190,7 +196,8 @@ int vfs_mkdir(char *path, struct dentry *rel, short flags) {
 	return parent->vnode->ops->mkdir(parent->vnode, child, flags);
 }
 
-int vfs_create(char *path, struct dentry *rel, short flags) {
+int vfs_create(char *path, struct dentry *rel, short flags)
+{
 	struct dentry *parent;
 	int err = vfs_find_dentry(path, &parent, rel, true);
 	if (err)
@@ -213,7 +220,8 @@ int vfs_create(char *path, struct dentry *rel, short flags) {
 	return parent->vnode->ops->create(parent->vnode, child, flags);
 }
 
-int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd) {
+int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd)
+{
 	printk("vfs_open(%s)\n", path);
 
 	struct dentry *file;
@@ -229,7 +237,8 @@ int vfs_open(char *path, struct dentry *rel, short flags, struct file *fd) {
 
 int vfs_close(struct file *fd) { return 0; }
 
-int vfs_write(struct file *fd, char *buf, long n) {
+int vfs_write(struct file *fd, char *buf, long n)
+{
 	printk("vfs_write(%s, %d)\n", fd->entry->name, n);
 	struct vnode_operations *ops = fd->entry->vnode->ops;
 	if (!ops->write)
@@ -244,7 +253,8 @@ int vfs_write(struct file *fd, char *buf, long n) {
 	return res;
 }
 
-int vfs_pread(struct file *fd, char *buf, long n, long pos) {
+int vfs_pread(struct file *fd, char *buf, long n, long pos)
+{
 	printk("vfs_read(%s, %d)\n", fd->entry->name, n);
 	struct vnode_operations *ops = fd->entry->vnode->ops;
 	if (!ops->read)
@@ -254,7 +264,8 @@ int vfs_pread(struct file *fd, char *buf, long n, long pos) {
 	return res;
 }
 
-int vfs_read(struct file *fd, char *buf, long n) {
+int vfs_read(struct file *fd, char *buf, long n)
+{
 	int res = vfs_pread(fd, buf, n, fd->pos);
 
 	if (res > 0 && (S_ISREG(fd->entry->vnode->mode) ||
@@ -267,7 +278,8 @@ int vfs_read(struct file *fd, char *buf, long n) {
 
 long vfs_size(struct file *fd) { return fd->entry->vnode->size; }
 
-void vfs_cache_dentry(struct dentry *ent) {
+void vfs_cache_dentry(struct dentry *ent)
+{
 	size_t size = sizeof(struct dentry *) + strlen(ent->name) + 1;
 	struct dcache_key *key = kmalloc(size);
 	key->parent = ent->parent;
@@ -276,7 +288,8 @@ void vfs_cache_dentry(struct dentry *ent) {
 	hmap_add(&dentry_cache, key, size, ent);
 }
 
-void vfs_cache_vnode(struct vnode *vnode) {
+void vfs_cache_vnode(struct vnode *vnode)
+{
 	struct vnode_key *key = kmalloc(sizeof(struct vnode_key));
 	key->vfs = vnode->curr_vfs;
 	key->number = vnode->number;
@@ -287,7 +300,8 @@ void vfs_cache_vnode(struct vnode *vnode) {
 long vfs_upcount;
 struct spinlock vfs_biglock;
 
-void vfs_init() {
+void vfs_init()
+{
 	hmap_init(&dentry_cache);
 	hmap_init(&vnode_cache);
 

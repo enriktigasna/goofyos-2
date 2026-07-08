@@ -5,14 +5,16 @@
 #include <goofy-os/scancode.h>
 #include <goofy-os/sched.h>
 
-void timer_handler(struct registers *ctx) {
+void timer_handler(struct registers *ctx)
+{
 	// printk("%c", '0' + current_cpuid());
 	x2apic_eoi();
 	if (!cpu_cores[current_cpuid()].preempt_count)
 		schedule(ctx);
 }
 
-void dump_regs(struct registers *ctx) {
+void dump_regs(struct registers *ctx)
+{
 	printk("rax: %p\n", ctx->rax);
 	printk("rbx: %p\n", ctx->rbx);
 	printk("rcx: %p\n", ctx->rcx);
@@ -36,7 +38,8 @@ void dump_regs(struct registers *ctx) {
 
 void force_unlock_console() { fbcon.lock.locked = 0; }
 
-void isr_generic_handler(struct registers *ctx) {
+void isr_generic_handler(struct registers *ctx)
+{
 	__asm__ __volatile__("cli");
 	switch (ctx->vector_number) {
 	case 0x3:

@@ -3,7 +3,8 @@
 
 #define SERIAL_BAUD 9600
 
-void serial_init() {
+void serial_init()
+{
 	outb(0x3f8 + 3, 0x00);
 	outb(0x3f8 + 1, 0x00);
 	outb(0x3f8 + 3, 0x80);
@@ -18,7 +19,8 @@ void serial_init() {
 	outb(0x3f8 + 4, 0x0b);
 }
 
-void serial_write(char c) {
+void serial_write(char c)
+{
 	while ((inb(0x3f8 + 5) & 0x20) == 0)
 		;
 	outb(0x3f8, c);

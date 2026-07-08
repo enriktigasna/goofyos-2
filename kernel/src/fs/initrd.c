@@ -31,7 +31,8 @@ struct posix_ustar_header {
 	char pad[12];
 };
 
-int oct2bin(char *str, int size) {
+int oct2bin(char *str, int size)
+{
 	int n = 0;
 	for (int i = 0; i < size; i++) {
 		n *= 8;
@@ -40,7 +41,8 @@ int oct2bin(char *str, int size) {
 	return n;
 }
 
-struct posix_ustar_header *ustar_next(struct posix_ustar_header *header) {
+struct posix_ustar_header *ustar_next(struct posix_ustar_header *header)
+{
 	// Align to 512 and add another 512 block
 	int filesize = oct2bin((char *)&header->size, 11);
 	int aligned = (((filesize + 511) / 512) + 1) * 512;
@@ -52,7 +54,8 @@ struct posix_ustar_header *ustar_next(struct posix_ustar_header *header) {
 	return new;
 }
 
-void unpack_ustar(int length, struct posix_ustar_header *fs) {
+void unpack_ustar(int length, struct posix_ustar_header *fs)
+{
 	for (; fs; fs = ustar_next(fs)) {
 		printk("%s\n", fs->name);
 		if (!strcmp(fs->name, "./"))
@@ -96,7 +99,8 @@ void unpack_ustar(int length, struct posix_ustar_header *fs) {
 }
 
 // After we fill our tmpfs with ustar we can free module pages
-void unpack_initrd() {
+void unpack_initrd()
+{
 	if (!__limine_module_response ||
 	    __limine_module_response->module_count == 0) {
 		printk("[!] NO MODULES FOUND. Cannot load initrd.\n");

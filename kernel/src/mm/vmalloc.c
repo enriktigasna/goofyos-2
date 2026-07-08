@@ -13,7 +13,8 @@ struct spinlock vmalloc_lock;
 // and I will switch to rb-tree
 // Linux used this kind of approach until 2.6
 
-void *vmalloc_map_range(size_t size) {
+void *vmalloc_map_range(size_t size)
+{
 	if (size == 0 || size % PAGE_SIZE != 0) {
 		return NULL;
 	}
@@ -48,7 +49,8 @@ void *vmalloc_map_range(size_t size) {
 	return NULL;
 }
 
-void vmalloc_unmap_range(void *range) {
+void vmalloc_unmap_range(void *range)
+{
 	struct vmalloc_struct *curr;
 	for (curr = root; curr; curr = curr->next) {
 		if (curr->addr == range) {
@@ -58,7 +60,8 @@ void vmalloc_unmap_range(void *range) {
 }
 
 // Unmap and free pages backed by virt
-void _vrelease_pages(size_t count, void *virt) {
+void _vrelease_pages(size_t count, void *virt)
+{
 	for (int i = 0; i < count; i++) {
 		void *curr_virt = virt + i * PAGE_SIZE;
 		uint64_t curr_phys = ((uint64_t)virt_to_pfn(curr_virt)) << 12;
@@ -69,7 +72,8 @@ void _vrelease_pages(size_t count, void *virt) {
 	}
 }
 
-void _vfree(void *range) {
+void _vfree(void *range)
+{
 	struct vmalloc_struct *curr;
 	for (curr = root; curr; curr = curr->next) {
 		if (curr->addr == range) {
@@ -82,13 +86,15 @@ void _vfree(void *range) {
 	}
 }
 
-void vfree(void *range) {
+void vfree(void *range)
+{
 	acquire(&vmalloc_lock);
 	_vfree(range);
 	release(&vmalloc_lock);
 }
 
-void *_vmalloc(size_t size, uint64_t flags) {
+void *_vmalloc(size_t size, uint64_t flags)
+{
 	size_t aligned_size = PAGE_COUNT(size) * PAGE_SIZE;
 	void *addr = vmalloc_map_range(aligned_size);
 
@@ -100,27 +106,31 @@ void *_vmalloc(size_t size, uint64_t flags) {
 	return addr;
 }
 
-void *vmalloc_flags(size_t size, uint64_t flags) {
+void *vmalloc_flags(size_t size, uint64_t flags)
+{
 	acquire(&vmalloc_lock);
 	void *virt = _vmalloc(size, flags);
 	release(&vmalloc_lock);
 	return virt;
 }
 
-void *vmalloc(size_t size) {
+void *vmalloc(size_t size)
+{
 	acquire(&vmalloc_lock);
 	void *range = _vmalloc(size, PG_WRITE | PG_NX);
 	release(&vmalloc_lock);
 	return range;
 }
 
-void *vzalloc(size_t size) {
+void *vzalloc(size_t size)
+{
 	void *range = vmalloc(size);
 	memset(range, 0, size);
 	return range;
 }
 
-void vmalloc_init() {
+void vmalloc_init()
+{
 	root = kzalloc(sizeof(struct vmalloc_struct));
 	root->addr = (void *)VMALLOC_START;
 	root->size = VMALLOC_END - VMALLOC_START;
@@ -128,7 +138,8 @@ void vmalloc_init() {
 	void *vaddr;
 }
 
-void *vmap_contiguous(uint64_t phys_addr, size_t size) {
+void *vmap_contiguous(uint64_t phys_addr, size_t size)
+{
 	uint64_t aligned_addr = phys_addr & ~0xfff;
 	uint64_t page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 
@@ -149,7 +160,8 @@ void *vmap_contiguous(uint64_t phys_addr, size_t size) {
 	return range + (phys_addr & 0xfff);
 }
 
-void vunmap_contiguous(void *range) {
+void vunmap_contiguous(void *range)
+{
 	acquire(&vmalloc_lock);
 	struct vmalloc_struct *curr;
 	for (curr = root; curr; curr = curr->next) {

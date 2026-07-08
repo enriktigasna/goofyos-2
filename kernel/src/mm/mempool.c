@@ -27,7 +27,8 @@
  */
 
 void mempool_init(struct mempool *mempool, unsigned int size,
-		  unsigned int order) {
+		  unsigned int order)
+{
 	if (size < sizeof(struct list_head)) {
 		printk("mempool_init size < sizeof(struct list_head) %d<%d\n",
 		       size, sizeof(struct mempool));
@@ -45,7 +46,8 @@ void mempool_init(struct mempool *mempool, unsigned int size,
 	mempool->order = order;
 }
 
-void mempool_free_nolock(struct mempool *mempool, void *chunk) {
+void mempool_free_nolock(struct mempool *mempool, void *chunk)
+{
 	struct page *page = __hhdm_to_page(chunk);
 	struct page *base = base_page(page, mempool->order);
 	int max_count = (PAGE_SIZE << mempool->order) / mempool->size;
@@ -57,13 +59,15 @@ void mempool_free_nolock(struct mempool *mempool, void *chunk) {
 	}
 }
 
-void mempool_free(struct mempool *mempool, void *chunk) {
+void mempool_free(struct mempool *mempool, void *chunk)
+{
 	acquire(&mempool->lock);
 	mempool_free_nolock(mempool, chunk);
 	release(&mempool->lock);
 }
 
-void *mempool_alloc_nolock(struct mempool *mempool) {
+void *mempool_alloc_nolock(struct mempool *mempool)
+{
 	if (mempool->count > 0) {
 		void *ret = list_pop_front(&mempool->freelist);
 		struct page *page = __hhdm_to_page(ret);
@@ -97,14 +101,16 @@ void *mempool_alloc_nolock(struct mempool *mempool) {
 	return mempool_alloc_nolock(mempool);
 }
 
-void *mempool_alloc(struct mempool *mempool) {
+void *mempool_alloc(struct mempool *mempool)
+{
 	acquire(&mempool->lock);
 	void *ret = mempool_alloc_nolock(mempool);
 	release(&mempool->lock);
 
 	return ret;
 }
-void *mempool_zalloc(struct mempool *mempool) {
+void *mempool_zalloc(struct mempool *mempool)
+{
 	void *ret = mempool_alloc(mempool);
 	memset(ret, 0, mempool->size);
 

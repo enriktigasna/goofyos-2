@@ -43,7 +43,8 @@ struct tmpfs_superblock {
 	struct hashmap *tnode_cache;
 };
 
-bool tmpfs_has_file(struct tmpfs_inode *node, char *name) {
+bool tmpfs_has_file(struct tmpfs_inode *node, char *name)
+{
 	struct dlist *children = node->children;
 	for (struct dnode *curr = children->head; curr; curr = curr->next) {
 		if (!strcmp(((struct tmpfs_inode *)curr->value)->name, name)) {
@@ -53,7 +54,8 @@ bool tmpfs_has_file(struct tmpfs_inode *node, char *name) {
 	return false;
 }
 
-int tmpfs_mkdir(struct vnode *node, char *name, short flags) {
+int tmpfs_mkdir(struct vnode *node, char *name, short flags)
+{
 	acquire(&node->lock);
 
 	struct tmpfs_inode *tnode = node->private_data;
@@ -78,7 +80,8 @@ int tmpfs_mkdir(struct vnode *node, char *name, short flags) {
 	return 0;
 }
 
-int tmpfs_create(struct vnode *node, char *name, short flags) {
+int tmpfs_create(struct vnode *node, char *name, short flags)
+{
 	acquire(&node->lock);
 
 	struct tmpfs_inode *tnode = node->private_data;
@@ -103,7 +106,8 @@ int tmpfs_create(struct vnode *node, char *name, short flags) {
 	return 0;
 }
 
-int tmpfs_read(struct vnode *node, char *buf, long n, long off) {
+int tmpfs_read(struct vnode *node, char *buf, long n, long off)
+{
 	if (!S_ISREG(node->mode)) {
 		return -EINVAL;
 	}
@@ -121,7 +125,8 @@ int tmpfs_read(struct vnode *node, char *buf, long n, long off) {
 	return to_read;
 }
 
-int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
+int tmpfs_write(struct vnode *node, char *buf, long n, long off)
+{
 	if (!S_ISREG(node->mode)) {
 		return -EINVAL;
 	}
@@ -145,7 +150,8 @@ int tmpfs_write(struct vnode *node, char *buf, long n, long off) {
 	return n;
 }
 
-int tmpfs_lookup(struct vnode *node, char *name, long *num) {
+int tmpfs_lookup(struct vnode *node, char *name, long *num)
+{
 	acquire(&node->lock);
 	struct tmpfs_inode *tnode = node->private_data;
 
@@ -163,7 +169,8 @@ int tmpfs_lookup(struct vnode *node, char *name, long *num) {
 	return -ENOENT;
 }
 
-int tmpfs_create_node(struct vnode *node, long num, struct vnode **res) {
+int tmpfs_create_node(struct vnode *node, long num, struct vnode **res)
+{
 	struct tmpfs_superblock *tblock = node->curr_vfs->private_data;
 	struct tmpfs_inode *tnode =
 	    hmap_lookup(tblock->tnode_cache, &num, sizeof(long));
@@ -184,7 +191,8 @@ int tmpfs_create_node(struct vnode *node, long num, struct vnode **res) {
 	return 0;
 }
 
-void tmpfs_mount(struct dentry *dentry, struct vfs *vfs) {
+void tmpfs_mount(struct dentry *dentry, struct vfs *vfs)
+{
 	struct vnode *root_vnode = kzalloc(sizeof(struct vnode));
 	struct tmpfs_inode *root_inode = kzalloc(sizeof(struct tmpfs_inode));
 	dentry->vnode = root_vnode;

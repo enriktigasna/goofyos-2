@@ -19,7 +19,8 @@
 
 struct cmdline kernel_cmdline;
 
-void build_args(char *cmd) {
+void build_args(char *cmd)
+{
 	struct cmdline *curr_list = &kernel_cmdline;
 	char curr_word[MAX_CMDLINE_COMMAND];
 	int curr_len = 0;
@@ -45,7 +46,8 @@ void build_args(char *cmd) {
 	strcpy(curr_list->arg, curr_word);
 }
 
-void make_key(char *current) {
+void make_key(char *current)
+{
 	for (int i = 0; current[i]; i++) {
 		/* code */
 		if (current[i] == '=') {
@@ -59,7 +61,8 @@ void make_key(char *current) {
  * Dynamically allocates and returns value.
  * Needs to be freed to prevent memory leaks!
  */
-char *make_val(char *current) {
+char *make_val(char *current)
+{
 	int i;
 	for (i = 0; current[i]; i++) {
 		/* code */
@@ -76,7 +79,8 @@ char *make_val(char *current) {
 	return ret;
 }
 
-char *find_cmdline(char *query) {
+char *find_cmdline(char *query)
+{
 	char key[MAX_CMDLINE_COMMAND];
 	for (struct cmdline *curr = &kernel_cmdline; curr; curr = curr->next) {
 		strcpy(key, curr->arg);
@@ -91,14 +95,16 @@ char *find_cmdline(char *query) {
 	return NULL;
 }
 
-bool cmdline_contains(char *query) {
+bool cmdline_contains(char *query)
+{
 	char *res = find_cmdline(query);
 	bool contains = (bool)res;
 	kfree(res);
 	return contains;
 }
 
-void parse_cmdline() {
+void parse_cmdline()
+{
 	if (!__limine_cmdline_response) {
 		return;
 	}

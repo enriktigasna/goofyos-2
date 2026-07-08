@@ -8,8 +8,8 @@
 
 struct page *sparsemap_array = (struct page *)0xffffc00000000000;
 
-void __map_region_struct(struct mm_memmap_region *region,
-			 struct page_table *pt) {
+void __map_region_struct(struct mm_memmap_region *region, struct page_table *pt)
+{
 	uint64_t curr = region->base;
 	while (curr < region->base + region->size) {
 		struct page *ptr = &sparsemap_array[curr >> 12];
@@ -21,7 +21,8 @@ void __map_region_struct(struct mm_memmap_region *region,
 	}
 }
 
-void sparse_init() {
+void sparse_init()
+{
 	// Map in all the pages that should contain struct page
 	struct page_table *pt = &kernel_virtual_pt;
 

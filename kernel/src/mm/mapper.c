@@ -13,11 +13,13 @@ struct page_table kernel_virtual_pt;
 // We need mapper to work before we do that
 void *(*mapper_alloc_zpage)() = bump_zpage;
 
-uint64_t get_index(int level, void *addr) {
+uint64_t get_index(int level, void *addr)
+{
 	return (uint64_t)addr >> (12 + 9 * level) & 0x1ff;
 }
 
-struct page_table *new_page_table() {
+struct page_table *new_page_table()
+{
 	uint64_t *pg = zpgalloc();
 	memcpy(pg, kernel_virtual_pt.cr3, 0x1000);
 
@@ -27,8 +29,8 @@ struct page_table *new_page_table() {
 	return pt;
 }
 
-void map_page(struct page_table *pt, uint64_t phys, void *virt,
-	      uint64_t flags) {
+void map_page(struct page_table *pt, uint64_t phys, void *virt, uint64_t flags)
+{
 	acquire(&pt->lock);
 	uint64_t *cr3 = pt->cr3;
 
@@ -61,7 +63,8 @@ void map_page(struct page_table *pt, uint64_t phys, void *virt,
 	release(&pt->lock);
 }
 
-void unmap_page(struct page_table *pt, void *virt) {
+void unmap_page(struct page_table *pt, void *virt)
+{
 	acquire(&pt->lock);
 	uint64_t *cr3 = pt->cr3;
 
@@ -87,7 +90,8 @@ void unmap_page(struct page_table *pt, void *virt) {
 	release(&pt->lock);
 }
 
-bool is_mapped(struct page_table *pt, void *virt) {
+bool is_mapped(struct page_table *pt, void *virt)
+{
 	acquire(&pt->lock);
 
 	uint64_t *cr3 = pt->cr3;
@@ -121,7 +125,8 @@ bool is_mapped(struct page_table *pt, void *virt) {
 	}
 }
 
-uint64_t __virt_offset(int level, void *virt) {
+uint64_t __virt_offset(int level, void *virt)
+{
 	uint64_t page_size = 0x1000;
 	for (int i = 0; i < level; i++) {
 		page_size *= 0x1000;
@@ -130,7 +135,8 @@ uint64_t __virt_offset(int level, void *virt) {
 	return (uint64_t)virt & (page_size - 1);
 }
 
-int virt_to_pfn(void *virt) {
+int virt_to_pfn(void *virt)
+{
 	uint64_t *pt = (uint64_t *)__va(__readcr3());
 
 	int level = 3;
@@ -162,7 +168,8 @@ int virt_to_pfn(void *virt) {
 // date with higher half mappings
 
 // In future can do something like flipping in a reasonable way
-void kernel_top_pgt_init() {
+void kernel_top_pgt_init()
+{
 	uint64_t *cr3 = (void *)(__readcr3() + hhdm_offset);
 	for (int i = 0x100; i < 0x200; i++) {
 		if (cr3[i]) {

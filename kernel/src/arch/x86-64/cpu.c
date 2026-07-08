@@ -9,7 +9,8 @@
 int n_cpus;
 struct cpu cpu_cores[MAX_CPUS];
 
-void new_cpu_wait() {
+void new_cpu_wait()
+{
 	printk("Cpu %d woke up\n", current_cpuid());
 	set_idt(&idt_register);
 	set_gdt(&gdt_register);

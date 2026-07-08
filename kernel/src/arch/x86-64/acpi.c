@@ -12,18 +12,21 @@
 
 struct ioapic ioapics[MAX_IOAPICS];
 
-uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address) {
+uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address)
+{
 	*out_rsdp_address = __limine_rsdp_response->address;
 	return UACPI_STATUS_OK;
 }
 
-void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len) {
+void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len)
+{
 	return vmap_contiguous(addr, len);
 }
 
 void uacpi_kernel_unmap(void *addr, uacpi_size) { vunmap_contiguous(addr); }
 
-void uacpi_kernel_log(uacpi_log_level, const uacpi_char *msg) {
+void uacpi_kernel_log(uacpi_log_level, const uacpi_char *msg)
+{
 	printk("[UACPI] %s", msg);
 }
 
@@ -33,11 +36,13 @@ void *uacpi_kernel_alloc(size_t size) { return vmalloc(size); }
 
 void uacpi_kernel_free(void *object) { vfree(object); }
 
-struct acpi_entry_hdr *acpi_next(struct acpi_entry_hdr *hdr) {
+struct acpi_entry_hdr *acpi_next(struct acpi_entry_hdr *hdr)
+{
 	return (void *)hdr + hdr->length;
 }
 
-void parse_madt(uacpi_table table) {
+void parse_madt(uacpi_table table)
+{
 	struct acpi_madt *madt = (struct acpi_madt *)table.hdr;
 	struct acpi_entry_hdr *entry = (struct acpi_entry_hdr *)&madt->entries;
 	struct acpi_entry_hdr *end =
@@ -64,12 +69,14 @@ void parse_madt(uacpi_table table) {
 	}
 }
 
-void parse_hpet(uacpi_table table) {
+void parse_hpet(uacpi_table table)
+{
 	struct acpi_hpet *hpet = (struct acpi_hpet *)table.hdr;
 	global_hpet.base = vmap_contiguous(hpet->address.address, 0x1000);
 }
 
-void acpi_init() {
+void acpi_init()
+{
 	char tmp_buf[2048];
 
 	uacpi_status ret =

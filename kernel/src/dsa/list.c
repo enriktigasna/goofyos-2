@@ -3,20 +3,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct list_head *list_pop_front(struct list_head **head) {
+struct list_head *list_pop_front(struct list_head **head)
+{
 	struct list_head *ret = *head;
 	*head = (*head)->next;
 	return ret;
 }
 
-void list_push_front(struct list_head **head, struct list_head *needle) {
+void list_push_front(struct list_head **head, struct list_head *needle)
+{
 	if (*head)
 		(*head)->prev = needle;
 	needle->next = *head;
 	*head = needle;
 }
 
-void list_remove_node(struct list_head **head, struct list_head *needle) {
+void list_remove_node(struct list_head **head, struct list_head *needle)
+{
 	// If head is needle, then make it not.
 	if (*head == needle)
 		(*head) = (*head)->next;
@@ -29,19 +32,22 @@ void list_remove_node(struct list_head **head, struct list_head *needle) {
 	needle->prev = NULL;
 }
 
-struct single_list_head *slist_pop_front(struct single_list_head **head) {
+struct single_list_head *slist_pop_front(struct single_list_head **head)
+{
 	struct single_list_head *ret = *head;
 	*head = (*head)->next;
 	return ret;
 }
 
 void slist_push_front(struct single_list_head **head,
-		      struct single_list_head *needle) {
+		      struct single_list_head *needle)
+{
 	needle->next = *head;
 	*head = needle;
 }
 
-void dlist_front_push(struct dlist *stack, void *value) {
+void dlist_front_push(struct dlist *stack, void *value)
+{
 	struct dnode *new = kzalloc(sizeof(struct dnode));
 	new->value = value;
 	new->next = stack->head;
@@ -53,7 +59,8 @@ void dlist_front_push(struct dlist *stack, void *value) {
 	stack->count++;
 }
 
-void *dlist_front_pop(struct dlist *stack) {
+void *dlist_front_pop(struct dlist *stack)
+{
 	struct dnode *ret = stack->head;
 	if (!ret) {
 		return ret;
@@ -73,7 +80,8 @@ void *dlist_front_pop(struct dlist *stack) {
 	return val;
 }
 
-void dlist_back_push(struct dlist *queue, void *value) {
+void dlist_back_push(struct dlist *queue, void *value)
+{
 	struct dnode *new = kzalloc(sizeof(struct dnode));
 	new->value = value;
 	new->prev = queue->tail;
@@ -85,7 +93,8 @@ void dlist_back_push(struct dlist *queue, void *value) {
 	queue->count++;
 }
 
-void *dlist_back_pop(struct dlist *queue) {
+void *dlist_back_pop(struct dlist *queue)
+{
 	struct dnode *ret = queue->tail;
 	if (ret->prev)
 		ret->prev->next = NULL;
@@ -101,20 +110,23 @@ void *dlist_back_pop(struct dlist *queue) {
 	return val;
 }
 
-void dlist_kfree_values(struct dlist *dlist) {
+void dlist_kfree_values(struct dlist *dlist)
+{
 	while (dlist->head) {
 		kfree(dlist_front_pop(dlist));
 	}
 }
 
-void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *)) {
+void dlist_destroy_values(struct dlist *dlist, void (*destructor)(void *))
+{
 	for (struct dnode *curr = dlist->head; curr; curr = curr->next) {
 		destructor(curr->value);
 		kfree(curr->value);
 	}
 }
 
-void dlist_remove_item(struct dlist *dlist, struct dnode *item) {
+void dlist_remove_item(struct dlist *dlist, struct dnode *item)
+{
 	if (item == dlist->head) {
 		dlist_front_pop(dlist);
 		return;

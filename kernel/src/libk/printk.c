@@ -7,7 +7,8 @@
 
 struct spinlock printk_lock;
 
-void reverse(char str[], int length) {
+void reverse(char str[], int length)
+{
 	int start = 0;
 	int end = length - 1;
 	while (start < end) {
@@ -19,7 +20,8 @@ void reverse(char str[], int length) {
 	}
 }
 
-char *itoa(int num, char *str, int base, int capital) {
+char *itoa(int num, char *str, int base, int capital)
+{
 	int i = 0;
 	bool isNegative = false;
 	if (num == 0) {
@@ -51,7 +53,8 @@ char *itoa(int num, char *str, int base, int capital) {
 	return str;
 }
 
-char *ltoa(uint64_t num, char *str, int base, int capital) {
+char *ltoa(uint64_t num, char *str, int base, int capital)
+{
 	int i = 0;
 	if (num == 0) {
 		str[i++] = '0';
@@ -71,7 +74,8 @@ char *ltoa(uint64_t num, char *str, int base, int capital) {
 	return str;
 }
 
-int strnlen(const char *s, int count) {
+int strnlen(const char *s, int count)
+{
 	const char *sc;
 
 	for (sc = s; count-- && *sc != '\0'; ++sc)
@@ -82,7 +86,8 @@ int strnlen(const char *s, int count) {
 /**
  * Returns eaten characters
  */
-int parse_width(char *fmt, int *width) {
+int parse_width(char *fmt, int *width)
+{
 	int consumed = 0;
 	int wd = 0;
 
@@ -97,7 +102,8 @@ int parse_width(char *fmt, int *width) {
 	return consumed;
 }
 
-int _vsprintf(char *buf, const char *fmt, va_list args) {
+int _vsprintf(char *buf, const char *fmt, va_list args)
+{
 	char *str;
 	char *s;
 	char numbuf[16];
@@ -183,7 +189,8 @@ int _vsprintf(char *buf, const char *fmt, va_list args) {
 	return (str - buf);
 }
 
-int sprintf(char *buf, const char *fmt, ...) {
+int sprintf(char *buf, const char *fmt, ...)
+{
 	va_list args;
 	int printed;
 
@@ -193,7 +200,8 @@ int sprintf(char *buf, const char *fmt, ...) {
 	return printed;
 }
 
-int printk(const char *fmt, ...) {
+int printk(const char *fmt, ...)
+{
 	char printf_buf[1024];
 
 	va_list args;

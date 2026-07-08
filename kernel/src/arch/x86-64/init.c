@@ -9,7 +9,8 @@
 #include <goofy-os/vmalloc.h>
 
 uint64_t boot_context_cr3;
-void smp_init() {
+void smp_init()
+{
 	boot_context_cr3 = __readcr3();
 	struct limine_mp_info **cpus = __limine_mp_response->cpus;
 	for (int i = 1; i < n_cpus; i++) {
@@ -18,12 +19,14 @@ void smp_init() {
 	}
 }
 
-void detect_x2apic() {
+void detect_x2apic()
+{
 	uint64_t val;
 	rdmsr(0x802, &val);
 }
 
-void set_tss_desc(struct tss_desc *desc, struct tss *task_seg) {
+void set_tss_desc(struct tss_desc *desc, struct tss *task_seg)
+{
 	uint64_t base = (uint64_t)task_seg;
 	uint32_t limit = sizeof(*task_seg) - 1;
 
@@ -43,7 +46,8 @@ void set_tss_desc(struct tss_desc *desc, struct tss *task_seg) {
 	desc->reserved = 0;
 }
 
-void tss_init() {
+void tss_init()
+{
 	uint64_t gdt_idx = 5;
 	for (int i = 0; i < n_cpus; i++) {
 		struct tss *task_seg = kzalloc(sizeof(struct tss));
@@ -66,12 +70,14 @@ void tss_init() {
 	}
 }
 
-void tss_percpu_init() {
+void tss_percpu_init()
+{
 	unsigned short selector = (5 + current_cpuid() * 2) * 8;
 	__asm__ __volatile__("ltr %0" ::"m"(selector) : "memory");
 }
 
-void cpu_init() {
+void cpu_init()
+{
 	// Mask all pic
 	pic_disable();
 	detect_x2apic();

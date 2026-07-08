@@ -5,7 +5,8 @@
 #include <goofy-os/vfs.h>
 #include <string.h>
 
-bool validate_elf(struct file *exe, struct elf64_hdr *hdr) {
+bool validate_elf(struct file *exe, struct elf64_hdr *hdr)
+{
 	long exe_size = vfs_size(exe);
 
 	if (!memcmp(hdr->e_ident, ELFMAG, SELFMAG)) {
@@ -35,7 +36,8 @@ bool validate_elf(struct file *exe, struct elf64_hdr *hdr) {
 	return true;
 }
 
-int run_elf_file(struct binprm *binprm) {
+int run_elf_file(struct binprm *binprm)
+{
 	struct file *executable = binprm->executable;
 	struct elf64_hdr hdr;
 	int err;

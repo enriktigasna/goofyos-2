@@ -14,7 +14,8 @@
  * Used to bootstrap memory management
  */
 
-void *pfn_to_virt(unsigned long pfn) {
+void *pfn_to_virt(unsigned long pfn)
+{
 	return (void *)((((long)pfn) << 12) + hhdm_offset);
 }
 
@@ -36,7 +37,8 @@ struct buddy_zone buddy_zones[MAX_BUDDY_ZONES];
 bool buddy_initialized = false;
 struct pgalloc_chunk *pgalloc_head;
 
-bool valid_buddy_pfn(unsigned long pfn) {
+bool valid_buddy_pfn(unsigned long pfn)
+{
 	for (int i = 0; i < MAX_BUDDY_ZONES; i++) {
 		if (buddy_zones[i].pfn_base <= pfn &&
 		    (buddy_zones[i].pfn_base + buddy_zones[i].size) > pfn)
@@ -46,7 +48,8 @@ bool valid_buddy_pfn(unsigned long pfn) {
 }
 
 // Remove a page from it's freelist
-void remove_from_freelist(struct page *page) {
+void remove_from_freelist(struct page *page)
+{
 	list_remove_node(&buddy_lists[page->buddy_order].head,
 			 &page->buddy_list);
 
@@ -54,7 +57,8 @@ void remove_from_freelist(struct page *page) {
 	page->flags &= ~PAGE_FLAG_FREE;
 }
 
-void free_pages_nolock(struct page *page, int order) {
+void free_pages_nolock(struct page *page, int order)
+{
 	unsigned long pfn = page_to_pfn(page);
 	unsigned int buddy_pfn = GET_BUDDY(pfn, order);
 	struct page *buddy_page = pfn_to_page(buddy_pfn);
@@ -89,7 +93,8 @@ direct_free:
 	buddy_lists[order].count++;
 }
 
-void free_pages(struct page *page, int order) {
+void free_pages(struct page *page, int order)
+{
 	acquire(&kmem.lock);
 	free_pages_nolock(page, order);
 	release(&kmem.lock);
@@ -97,7 +102,8 @@ void free_pages(struct page *page, int order) {
 
 void free_page(struct page *page) { free_pages(page, 0); }
 
-struct page *alloc_pages_nolock(int order, int flags) {
+struct page *alloc_pages_nolock(int order, int flags)
+{
 	long pfn;
 	struct page *ret;
 	// First check for same order freelist
@@ -128,7 +134,8 @@ struct page *alloc_pages_nolock(int order, int flags) {
 	return ret;
 }
 
-struct page *alloc_pages(int order, int flags) {
+struct page *alloc_pages(int order, int flags)
+{
 	struct page *ret;
 
 	if (flags & ~BUDDY_FLAGMASK) {
@@ -148,23 +155,27 @@ struct page *alloc_pages(int order, int flags) {
 
 struct page *alloc_page() { return alloc_pages(0, 0); }
 
-void *pgalloc() {
+void *pgalloc()
+{
 	struct page *page = alloc_pages(0, 0);
 	return page_to_virt(page);
 }
 
-void *pgzalloc() {
+void *pgzalloc()
+{
 	struct page *page = alloc_pages(0, BUDDY_ZERO);
 	void *virt = page_to_virt(page);
 	return virt;
 }
 
-void pgfree(void *page) {
+void pgfree(void *page)
+{
 	struct page *_page = __hhdm_to_page(page);
 	free_page(_page);
 }
 
-void buddy_init() {
+void buddy_init()
+{
 	// First N available pages will be allocated for the page
 	// Skip the things allocated by bump allocator
 

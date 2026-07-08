@@ -6,7 +6,8 @@
 #include <string.h>
 
 unsigned int bump_allocated = 0;
-void *bump_page() {
+void *bump_page()
+{
 	if (buddy_initialized) {
 		printk("Used early allocator after pagealloc initialized!\n");
 		hcf();
@@ -26,7 +27,8 @@ void *bump_page() {
 	return NULL;
 }
 
-void *bump_zpage() {
+void *bump_zpage()
+{
 	void *pg = bump_page();
 	memset(pg, 0, 0x1000);
 	return pg;

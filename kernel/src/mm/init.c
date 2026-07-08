@@ -12,7 +12,8 @@ uint64_t hhdm_offset;
 // Should only be used early on!
 struct mm_memmap_region mm_phys_regions[MM_MAX_MEMORY_REGIONS];
 
-static void setup_memmap_regions() {
+static void setup_memmap_regions()
+{
 	struct limine_memmap_entry *entry;
 	struct limine_memmap_entries **entries;
 	entries = __limine_memmap_response->entries;
@@ -35,7 +36,8 @@ static void setup_memmap_regions() {
  * Need one freelist per order
  */
 
-void mm_init() {
+void mm_init()
+{
 	setup_memmap_regions();
 	// Need to set up a temporary pagealloc, then pages, and then real
 	kernel_top_pgt_init();

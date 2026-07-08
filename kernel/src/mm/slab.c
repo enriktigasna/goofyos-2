@@ -27,7 +27,8 @@ struct mempool slab_mempool;
 
 // Turn a page into a freelist of size size
 // *page becomes the head
-void *fill_page_freelist(struct kmem_cache *cache, void *page) {
+void *fill_page_freelist(struct kmem_cache *cache, void *page)
+{
 	void *next = NULL;
 	for (int i = 0; i < (N_OBJECTS(cache)); i++) {
 		*(void **)(page + i * cache->size) = next;
@@ -36,7 +37,8 @@ void *fill_page_freelist(struct kmem_cache *cache, void *page) {
 	return next;
 }
 
-void kmem_insert_slab(struct slab *slab) {
+void kmem_insert_slab(struct slab *slab)
+{
 	struct kmem_cache *cache = slab->cache;
 	// LAST SLAB TODO: Make it free the empty return slabs, if n_empty over
 	// SLAB_MAX_EMPTY
@@ -58,12 +60,14 @@ void kmem_insert_slab(struct slab *slab) {
 	list_push_front(&cache->slab_partial, &slab->slab_list);
 }
 
-void *kmem_get_chunk_from_slab(struct slab *slab) {
+void *kmem_get_chunk_from_slab(struct slab *slab)
+{
 	slab->free_objects--;
 	return slist_pop_front(&slab->freelist);
 }
 
-void *kmem_cache_alloc_partial(struct kmem_cache *cache) {
+void *kmem_cache_alloc_partial(struct kmem_cache *cache)
+{
 	// Grab a slab from partial
 	printk("Trying to alloc from partial\n");
 	struct slab *slab = container_of(list_pop_front(&cache->slab_partial),
@@ -76,7 +80,8 @@ void *kmem_cache_alloc_partial(struct kmem_cache *cache) {
 	return chunk;
 }
 
-void *kmem_cache_alloc_empty(struct kmem_cache *cache) {
+void *kmem_cache_alloc_empty(struct kmem_cache *cache)
+{
 	printk("Trying to alloc from empty\n");
 	// Grab a slab from empty
 	struct slab *slab = container_of(list_pop_front(&cache->slab_empty),
@@ -89,7 +94,8 @@ void *kmem_cache_alloc_empty(struct kmem_cache *cache) {
 	return chunk;
 }
 
-int kmem_cache_new_empty(struct kmem_cache *cache) {
+int kmem_cache_new_empty(struct kmem_cache *cache)
+{
 	struct page *new_page = alloc_pages(cache->order, 0);
 	struct slab *new_slab = mempool_zalloc(&slab_mempool);
 	void *virt_page;
@@ -121,7 +127,8 @@ err:
 	mempool_free(&slab_mempool, new_slab);
 }
 
-void *kmem_cache_alloc_nolock(struct kmem_cache *cache) {
+void *kmem_cache_alloc_nolock(struct kmem_cache *cache)
+{
 	if (cache->n_partial)
 		return kmem_cache_alloc_partial(cache);
 	if (cache->n_empty)
@@ -132,14 +139,16 @@ void *kmem_cache_alloc_nolock(struct kmem_cache *cache) {
 	return kmem_cache_alloc_empty(cache);
 }
 
-void *kmem_cache_alloc(struct kmem_cache *cache) {
+void *kmem_cache_alloc(struct kmem_cache *cache)
+{
 	acquire(&cache->cache_lock);
 	void *ret = kmem_cache_alloc_nolock(cache);
 	release(&cache->cache_lock);
 	return ret;
 }
 
-void *kmem_cache_free_nolock(struct kmem_cache *cache, void *chunk) {
+void *kmem_cache_free_nolock(struct kmem_cache *cache, void *chunk)
+{
 	struct page *page = __hhdm_to_page(chunk);
 	struct slab *slab = page->slab;
 	struct page *base_page = base_page(page, cache->order);
@@ -162,13 +171,15 @@ void *kmem_cache_free_nolock(struct kmem_cache *cache, void *chunk) {
 	kmem_insert_slab(slab);
 }
 
-void *kmem_cache_free(struct kmem_cache *cache, void *chunk) {
+void *kmem_cache_free(struct kmem_cache *cache, void *chunk)
+{
 	acquire(&cache->cache_lock);
 	kmem_cache_free_nolock(cache, chunk);
 	release(&cache->cache_lock);
 }
 
-void *kmalloc(size_t size) {
+void *kmalloc(size_t size)
+{
 	if (size > kmalloc_sizes[SLAB_COUNT - 1])
 		return NULL;
 
@@ -176,7 +187,8 @@ void *kmalloc(size_t size) {
 	return kmem_cache_alloc(cache);
 }
 
-void kfree(void *chunk) {
+void kfree(void *chunk)
+{
 	struct page *page = __hhdm_to_page(chunk);
 	struct slab *slab = page->slab;
 	struct kmem_cache *cache = slab->cache;
@@ -184,7 +196,8 @@ void kfree(void *chunk) {
 	kmem_cache_free(cache, chunk);
 }
 
-void slab_init() {
+void slab_init()
+{
 	mempool_init(&slab_mempool, sizeof(struct slab), 1);
 	for (int i = 0; i < SLAB_COUNT; i++) {
 		struct kmem_cache *curr = &kmalloc_caches[i];

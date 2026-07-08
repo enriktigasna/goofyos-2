@@ -24,23 +24,27 @@
 
 uint64_t tsc_per_second;
 
-void ioapic_write(struct ioapic *ioapic, uint8_t offset, uint32_t val) {
+void ioapic_write(struct ioapic *ioapic, uint8_t offset, uint32_t val)
+{
 	*(volatile uint32_t *)ioapic->base = offset;
 	*(volatile uint32_t *)(ioapic->base + 0x10) = val;
 }
 
-uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset) {
+uint32_t ioapic_read(struct ioapic *ioapic, uint8_t offset)
+{
 	*(volatile uint32_t *)ioapic->base = offset;
 	return *(volatile uint32_t *)(ioapic->base + 0x10);
 }
 
-void pit_program_mode2(uint16_t div) {
+void pit_program_mode2(uint16_t div)
+{
 	outb(0x43, 0x34); // ch0, lobyte/hibyte, mode 2, binary
 	outb(0x40, div & 0xFF);
 	outb(0x40, div >> 8);
 }
 
-uint16_t pit_read_counter(void) {
+uint16_t pit_read_counter(void)
+{
 	outb(0x43, 0b0000000); // latch ch0
 	uint8_t lo = inb(0x40);
 	uint8_t hi = inb(0x40);
@@ -49,11 +53,13 @@ uint16_t pit_read_counter(void) {
 
 // Get approximation, not to be used for exact things
 
-inline void x2apic_write(uint32_t reg, uint64_t val) {
+inline void x2apic_write(uint32_t reg, uint64_t val)
+{
 	wrmsr(X2APIC_MSR_BASE + reg, val);
 }
 
-inline uint64_t x2apic_read(uint32_t reg) {
+inline uint64_t x2apic_read(uint32_t reg)
+{
 	uint64_t val;
 	rdmsr(X2APIC_MSR_BASE + reg, &val);
 	return val;
@@ -62,7 +68,8 @@ inline uint64_t x2apic_read(uint32_t reg) {
 inline void x2apic_eoi() { x2apic_write(X2APIC_EOI, 0); }
 
 uint64_t ticks_in_10ms;
-void x2apic_calibrate_timer() {
+void x2apic_calibrate_timer()
+{
 	x2apic_write(X2APIC_TIMER_DIV, 0x3);
 	x2apic_write(X2APIC_TIMER_INITCNT, 0xFFFFFFFF);
 	hpet_wait_us(10000);
@@ -70,7 +77,8 @@ void x2apic_calibrate_timer() {
 	ticks_in_10ms = 0xFFFFFFFF - x2apic_read(X2APIC_TIMER_CURCNT);
 }
 
-void x2apic_init_timer() {
+void x2apic_init_timer()
+{
 	x2apic_write(X2APIC_SVR, 0xFF | X2APIC_SVR_ENABLE);
 	x2apic_write(X2APIC_LVT_TMR, 0x20 | APICTMR_PERIODIC);
 	x2apic_write(X2APIC_TIMER_DIV, 0x3);

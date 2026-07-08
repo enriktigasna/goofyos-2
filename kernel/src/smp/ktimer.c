@@ -5,14 +5,16 @@
 #include <goofy-os/time.h>
 #include <goofy-os/vmalloc.h>
 
-void do_ktimer(struct ktimer *ktimer) {
+void do_ktimer(struct ktimer *ktimer)
+{
 	while (1) {
 		hpet_wait_us_yield(ktimer->us_delay);
 		ktimer->func(ktimer->arg);
 	}
 }
 
-struct task *init_ktimer(struct ktimer *ktimer) {
+struct task *init_ktimer(struct ktimer *ktimer)
+{
 	struct task *ktimer_task = kzalloc(sizeof(struct task));
 	ktimer_task->regs = kzalloc(sizeof(struct registers));
 	ktimer_task->pt = new_page_table();

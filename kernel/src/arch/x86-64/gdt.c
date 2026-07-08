@@ -4,7 +4,8 @@
 uint64_t gdt_table[255];
 struct gdtr gdt_register;
 
-void init_gdt() {
+void init_gdt()
+{
 	int idx = 0;
 	gdt_table[idx++] = 0x0000000000000000; // Null descriptor
 	gdt_table[idx++] = 0x00AF9A000000FFFF; // Kernel code segment

@@ -8,7 +8,8 @@
 #define PIC2_DATA (PIC2 + 1)
 #define PIC_EOI 0x20
 
-void pic_disable(void) {
+void pic_disable(void)
+{
 	outb(PIC1_DATA, 0xff);
 	outb(PIC2_DATA, 0xff);
 }

@@ -51,7 +51,8 @@ uint32_t ansi_colors[] = {
     0xffffff, // white
 };
 
-inline void put_glyph(struct fbconsole_queue_item todo) {
+inline void put_glyph(struct fbconsole_queue_item todo)
+{
 	volatile uint32_t *fb_ptr = fbcon.framebuf;
 	uint8_t *glyph_ptr = &vga_font[todo.c * 16];
 
@@ -72,14 +73,16 @@ inline void put_glyph(struct fbconsole_queue_item todo) {
 	}
 }
 
-void console_flush() {
+void console_flush()
+{
 	for (int i = 0; i < fbcon.queue_items; i++) {
 		put_glyph(fbcon.queue[i]);
 	}
 	fbcon.queue_items = 0;
 }
 
-static void queue_push(struct fbconsole_queue_item todo) {
+static void queue_push(struct fbconsole_queue_item todo)
+{
 	uint16_t *target =
 	    &fbcon.term_buffer[todo.y * fbcon.width_char + todo.x];
 
@@ -96,7 +99,8 @@ static void queue_push(struct fbconsole_queue_item todo) {
 	fbcon.queue[fbcon.queue_items++] = todo;
 }
 
-void scroll() {
+void scroll()
+{
 	for (int i = 1; i < fbcon.height_char; i++) {
 		for (int j = 0; j < fbcon.width_char; j++) {
 			uint16_t tar =
@@ -119,7 +123,8 @@ void scroll() {
 	fbcon.cursor_x = 0;
 }
 
-void console_carriage_return() {
+void console_carriage_return()
+{
 	if (fbcon.cursor_y + 1 >= fbcon.height_char) {
 		scroll();
 	} else {
@@ -128,7 +133,8 @@ void console_carriage_return() {
 	}
 }
 
-void console_write_glyph(char c) {
+void console_write_glyph(char c)
+{
 	queue_push((struct fbconsole_queue_item){
 	    .c = c,
 	    .x = fbcon.cursor_x,
@@ -137,7 +143,8 @@ void console_write_glyph(char c) {
 	});
 }
 
-void console_write(char *str) {
+void console_write(char *str)
+{
 	acquire(&fbcon.lock);
 	int idx = 0;
 	uint8_t cur;
@@ -156,7 +163,8 @@ void console_write(char *str) {
 	release(&fbcon.lock);
 }
 
-void console_init(struct limine_framebuffer *framebuffer) {
+void console_init(struct limine_framebuffer *framebuffer)
+{
 	if (NO_FRAMEBUFFER)
 		return;
 	fbcon = (struct fbconsole){

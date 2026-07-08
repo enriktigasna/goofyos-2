@@ -21,12 +21,14 @@
 
 void ktimer_task(uint64_t id) { printk("Hello from timer thread %d!\n", id); }
 
-void schedule_bsp() {
+void schedule_bsp()
+{
 	cpu_cores[0].cli_count = 0;
 	go_to_task(&idle_task);
 }
 
-void run_init() {
+void run_init()
+{
 	struct file *init = kzalloc(sizeof(struct file));
 	if (vfs_open("/sbin/init", NULL, 0, init) != 0) {
 		printk("[!] Failed to start init!\n");
@@ -36,7 +38,8 @@ void run_init() {
 	exec_file(init);
 }
 
-void kmain() {
+void kmain()
+{
 	limine_init();
 	serial_init();
 
