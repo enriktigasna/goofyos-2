@@ -177,19 +177,35 @@ void buddy_init() {
 	// TODO: Optimize, check alignmnent and if enough is left, free big
 	// orders at once
 	int page_idx = 0;
+	int cur_order;
 	for (int zone_idx = 0; zone_idx < MAX_BUDDY_ZONES; zone_idx++) {
 		for (int i = 0; i < buddy_zones[zone_idx].size; i++) {
+			cur_order = 0;
+
 			if (page_idx < bump_allocated) {
 				page_idx++;
 				continue;
 			}
 
-			long pfn = buddy_zones[zone_idx].pfn_base + i;
-			free_page(pfn_to_page(pfn));
+			// TODO: Rewrite it more clean.
+			// Make a helper for how much you are allowed to free
+			// given: pfn, pages left. It just returns an order
 
-			page_idx++;
-			if ((page_idx % 10000) == 0)
-				printk("[BUDDY] Freed %d pages \n", page_idx);
+			// This right now forgets alignment, make it not forget
+			// alignment
+			while (buddy_zones[zone_idx].size - i <
+				   (1 << cur_order) &&
+			       cur_order < MAX_ORDER)
+				cur_order++;
+
+			long pfn = buddy_zones[zone_idx].pfn_base + i;
+			free_pages(pfn_to_page(pfn), cur_order);
+
+			page_idx += 1 << cur_order;
+			i += 1 << cur_order;
+
+			// if ((page_idx % 10000) == 0)
+			// printk("[BUDDY] Freed %d pages \n", page_idx);
 		}
 	}
 
