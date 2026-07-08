@@ -74,7 +74,11 @@ void free_pages_nolock(struct page *page, int order) {
 
 	// Merge the buddy
 	remove_from_freelist(buddy_page);
-	free_pages_nolock(buddy_page, order + 1);
+	// Free the one that is in front!
+	if (buddy_pfn > pfn)
+		free_pages_nolock(page, order + 1);
+	else
+		free_pages_nolock(buddy_page, order + 1);
 	return;
 
 	// We can't merge it, free it normally
@@ -86,7 +90,6 @@ direct_free:
 }
 
 void free_pages(struct page *page, int order) {
-
 	acquire(&kmem.lock);
 	free_pages_nolock(page, order);
 	release(&kmem.lock);
@@ -98,15 +101,18 @@ struct page *alloc_pages_nolock(int order, int flags) {
 	long pfn;
 	struct page *ret;
 	// First check for same order freelist
+	if (order > MAX_ORDER) {
+		printk("Trying to allocate order %d!!!\n");
+		hcf();
+	}
 
 	if (buddy_lists[order].count > 0) {
 		ret = container_of(list_pop_front(&buddy_lists[order].head),
 				   struct page, buddy_list);
-		buddy_lists[order].head = buddy_lists[order].head->next;
-
 		buddy_lists[order].count--;
 		return ret;
 	}
+
 	if (order == MAX_ORDER)
 		return NULL;
 	// Allocate 1 order higher, then free the buddy
@@ -115,8 +121,8 @@ struct page *alloc_pages_nolock(int order, int flags) {
 		return NULL;
 
 	pfn = page_to_pfn(ret);
-	long pfn_buddy = GET_BUDDY(pfn, order);
-	free_pages_nolock(pfn_to_page(pfn_buddy), order);
+	long buddy_pfn = GET_BUDDY(pfn, order);
+	free_pages_nolock(pfn_to_page(buddy_pfn), order);
 	ret->flags &= ~PAGE_FLAG_FREE;
 
 	return ret;
@@ -124,6 +130,12 @@ struct page *alloc_pages_nolock(int order, int flags) {
 
 struct page *alloc_pages(int order, int flags) {
 	struct page *ret;
+
+	if (flags & ~BUDDY_FLAGMASK) {
+		printk("alloc_pages got invalid flags passed!\n");
+		return NULL;
+	}
+
 	acquire(&kmem.lock);
 	ret = alloc_pages_nolock(order, flags);
 	release(&kmem.lock);
@@ -176,6 +188,8 @@ void buddy_init() {
 			free_page(pfn_to_page(pfn));
 
 			page_idx++;
+			if ((page_idx % 10000) == 0)
+				printk("[BUDDY] Freed %d pages \n", page_idx);
 		}
 	}
 

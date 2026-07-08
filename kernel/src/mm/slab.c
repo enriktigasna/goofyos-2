@@ -40,18 +40,20 @@ void kmem_insert_slab(struct slab *slab) {
 	struct kmem_cache *cache = slab->cache;
 	// LAST SLAB TODO: Make it free the empty return slabs, if n_empty over
 	// SLAB_MAX_EMPTY
+	printk("%d %d\n", slab->free_objects, N_OBJECTS(cache));
 	if (N_OBJECTS(cache) == slab->free_objects) {
 		cache->n_empty++;
 		list_push_front(&cache->slab_empty, &slab->slab_list);
 		return;
 	}
 
-	if (N_OBJECTS(cache) == 0) {
+	if (slab->free_objects == 0) {
 		cache->n_full++;
 		list_push_front(&cache->slab_full, &slab->slab_list);
 		return;
 	}
 
+	printk("inserting to partial\n");
 	cache->n_partial++;
 	list_push_front(&cache->slab_partial, &slab->slab_list);
 }
@@ -63,6 +65,7 @@ void *kmem_get_chunk_from_slab(struct slab *slab) {
 
 void *kmem_cache_alloc_partial(struct kmem_cache *cache) {
 	// Grab a slab from partial
+	printk("Trying to alloc from partial\n");
 	struct slab *slab = container_of(list_pop_front(&cache->slab_partial),
 					 struct slab, slab_list);
 	cache->n_partial--;
@@ -74,6 +77,7 @@ void *kmem_cache_alloc_partial(struct kmem_cache *cache) {
 }
 
 void *kmem_cache_alloc_empty(struct kmem_cache *cache) {
+	printk("Trying to alloc from empty\n");
 	// Grab a slab from empty
 	struct slab *slab = container_of(list_pop_front(&cache->slab_empty),
 					 struct slab, slab_list);
@@ -190,7 +194,7 @@ void slab_init() {
 	}
 	void *samples[0x10];
 	for (int i = 0; i < 0x10; i++) {
-		samples[i] = kmalloc(20);
+		samples[i] = kmalloc(8192);
 		printk("alloc %p\n", samples[i]);
 	}
 	for (int i = 0; i < 0x10; i++) {
@@ -198,7 +202,7 @@ void slab_init() {
 		printk("free %p\n", samples[i]);
 	}
 	for (int i = 0; i < 0x10; i++) {
-		samples[i] = kmalloc(20);
+		samples[i] = kmalloc(8192);
 		printk("alloc %p\n", samples[i]);
 	}
 }

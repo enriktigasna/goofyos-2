@@ -3,6 +3,7 @@
 #define GET_BUDDY(pfn, order) (pfn ^ (1 << order))
 
 #define BUDDY_ZERO 1
+#define BUDDY_FLAGMASK (BUDDY_ZERO)
 
 struct page;
 
